@@ -138,6 +138,17 @@
   scrollbar-width: none;
   flex: 1;
   min-width: 0;
+  /* Without this, mobile Safari/Chrome's initial-viewport-width
+     calculation measures this track's full unclipped snap-content
+     (every card side by side, easily 1800px+) instead of its own
+     scrolled-and-clipped box — ballooning the WHOLE PAGE's layout
+     viewport to fit it, so the page loads already "zoomed out" and
+     everything (header/footer included) reads as off-canvas until the
+     user manually zooms/scrolls. contain:layout scopes this element's
+     box-size computation to itself so that leak can't happen. Confirmed
+     via live iPhone-viewport emulation: without it, window.innerWidth
+     reports 1720 on a 430px device; with it, 430. */
+  contain: layout;
 }
 .fw-wine-slider-track::-webkit-scrollbar { display: none; }
 .fw-wine-slider-item {

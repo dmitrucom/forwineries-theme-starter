@@ -1,11 +1,11 @@
 {
-  "core_version": "c9f6ae5",
-  "core_commit": "c9f6ae5",
-  "synced_at": "2026-09-09T15:21:13Z",
+  "core_version": "6cdb27c",
+  "core_commit": "6cdb27c",
+  "synced_at": "2026-09-09T17:15:26Z",
   "files": {
     "assets/css/admin-settings.css": "1e7494dd48dc6e443761f6d67c9bc2803d1685b492c176b4936deab988e92532",
     "assets/css/age-gate.css": "70444c18106dc142d066a4c94ff272b36e8929e50eb25f35f029f604284e28fe",
-    "assets/css/commerce7-overrides.css": "59d6bc0774699f73d23c16375656215a9c4b32cc8832e180adc9451e7fc81b71",
+    "assets/css/commerce7-overrides.css": "833bc36ba27a97738eb3e7fcb9c044c7dbc9995214b971233ad7ca10c2ce7483",
     "assets/css/demo-bar.css": "2e1aeec9d359a5b1359fa068534765993c22e3fef4e85cd0cecace85c01e6177",
     "assets/js/age-gate.js": "7191aae2d26c1a3f0d521e7f63ebdb50d47cc3316097ac3dedb8351cbd30b530",
     "assets/js/blocks-editor.js": "32ae081d20ec74bea32cb546f5c0f3e35b6f56608a2387a6c40bfe1e8cc2cf24",
