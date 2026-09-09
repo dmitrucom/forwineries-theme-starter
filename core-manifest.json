@@ -1,7 +1,7 @@
 {
-  "core_version": "8bba37e",
-  "core_commit": "8bba37e",
-  "synced_at": "2026-09-09T13:42:56Z",
+  "core_version": "c9f6ae5",
+  "core_commit": "c9f6ae5",
+  "synced_at": "2026-09-09T15:21:13Z",
   "files": {
     "assets/css/admin-settings.css": "1e7494dd48dc6e443761f6d67c9bc2803d1685b492c176b4936deab988e92532",
     "assets/css/age-gate.css": "70444c18106dc142d066a4c94ff272b36e8929e50eb25f35f029f604284e28fe",
@@ -29,7 +29,7 @@
     "src/Commerce7/WidgetCleanup.php": "08c3eb984baabf6efcae05426ee899bf7829838b5f01f5f204a6dc0d22579425",
     "src/Config.php": "7e4d51de7fe59831b65abdfe22c99ff1836e7575a4813671773d6ab0d79a30e7",
     "src/ContactForms.php": "b9b0c5eb6aaaff51f659ae7205e744e87a7c42d81deaa53b6a94cdb745447645",
-    "src/ContactSettings.php": "e3ebaa203104d2659ef582591d286f2688092eae2dbf1326d994a8e2a3062df9",
+    "src/ContactSettings.php": "334dc7190a3f87b62936b32246a0c0ab622e88ed021ad301afd4a952d0c76cce",
     "src/ContentSettings/Framework.php": "fdb275f0e44616717613e243c22aee18b36bfd3a6fa32e2a0a5b23bcbc0dce0d",
     "src/DemoBar.php": "fd030b63e2d4505502a2aec1600e06b79c6520cb5a4d83d3e27b23c300922cc9",
     "src/DesignSettingsTab.php": "8a853f35467de58b195e484e2cf8ec53f133712eeeadb4011fc629f6ef8c022f",

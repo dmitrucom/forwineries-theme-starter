@@ -82,9 +82,15 @@ class ContactSettings {
 
 		add_action( 'admin_init', function () use ( $config, $settings_group ) {
 			foreach ( self::fields( $config ) as $id => $conf ) {
+				// social_* fields are URLs — esc_url_raw() at the storage
+				// boundary, not just sanitize_text_field(), so a saved
+				// value can never carry a non-http(s) scheme regardless of
+				// what every call site's own esc_url() at output already
+				// does.
+				$is_url             = strpos( $id, 'social_' ) === 0;
 				register_setting( $settings_group, $config->option_key( 'contact_' . $id ), array(
 					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
+					'sanitize_callback' => $is_url ? 'esc_url_raw' : 'sanitize_text_field',
 					'default'           => $conf[1],
 				) );
 			}
