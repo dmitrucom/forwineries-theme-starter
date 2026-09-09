@@ -41,7 +41,7 @@ class AgeGate {
 				'fw-age-gate',
 				get_stylesheet_directory_uri() . '/core/assets/css/age-gate.css',
 				array(),
-				null
+				Config::asset_version( '/core/assets/css/age-gate.css' )
 			);
 
 			$handle = 'fw-age-gate';
@@ -49,7 +49,7 @@ class AgeGate {
 				$handle,
 				get_stylesheet_directory_uri() . '/core/assets/js/age-gate.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/age-gate.js' ),
 				true
 			);
 			// age-gate.js is a static asset (not PHP-templated) but the

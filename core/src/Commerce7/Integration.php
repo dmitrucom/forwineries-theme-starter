@@ -94,7 +94,7 @@ class Integration {
 				'fw-commerce7-overrides',
 				get_stylesheet_directory_uri() . '/core/assets/css/commerce7-overrides.css',
 				array( 'commerce7' ),
-				null
+				Config::asset_version( '/core/assets/css/commerce7-overrides.css' )
 			);
 
 			// commerce7.css declares its own :root factory defaults

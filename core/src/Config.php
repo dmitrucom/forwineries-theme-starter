@@ -119,6 +119,25 @@ class Config {
 		return 'fw-' . $name;
 	}
 
+	/**
+	 * Cache-busting version string for a core-owned asset, e.g.
+	 * asset_version('/core/assets/css/commerce7-overrides.css'). Every
+	 * core asset is enqueued with THIS, never a literal `null` — a static
+	 * handle with no version query string has no way to force Cloudflare's
+	 * edge cache (or a browser cache) to pick up a change once it's
+	 * cached; confirmed live serving a day-old commerce7-overrides.css to
+	 * every visitor via `cf-cache-status: HIT`, `max-age=604800`, despite
+	 * the origin file already having the fix. filemtime() means this
+	 * self-updates on every future edit with no separate version const to
+	 * remember to bump — unlike a theme's own {PREFIX}_THEME_VERSION,
+	 * which every asset here is deliberately independent of, since core
+	 * assets change on their own schedule (a core sync), not a theme's.
+	 */
+	public static function asset_version( string $relative_path ): string {
+		$file = get_stylesheet_directory() . $relative_path;
+		return file_exists( $file ) ? (string) filemtime( $file ) : '1';
+	}
+
 	public function text_domain(): string {
 		return (string) $this->get( 'text_domain', $this->slug() );
 	}

@@ -201,7 +201,7 @@ class Blocks {
 				'fw-c7-blocks-editor',
 				get_stylesheet_directory_uri() . '/core/assets/js/blocks-editor.js',
 				array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-server-side-render', 'wp-i18n' ),
-				null,
+				Config::asset_version( '/core/assets/js/blocks-editor.js' ),
 				true
 			);
 

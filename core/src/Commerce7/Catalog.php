@@ -34,7 +34,7 @@ class Catalog {
 				'fw-c7-wines-catalog',
 				get_stylesheet_directory_uri() . '/core/assets/js/wines-catalog.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/wines-catalog.js' ),
 				true
 			);
 			// Related-wines rail only ever appears once REST is
@@ -44,7 +44,7 @@ class Catalog {
 				'fw-related-wines-slider',
 				get_stylesheet_directory_uri() . '/core/assets/js/related-wines-slider.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/related-wines-slider.js' ),
 				true
 			);
 		} );

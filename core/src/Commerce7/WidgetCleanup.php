@@ -24,7 +24,7 @@ class WidgetCleanup {
 				'fw-c7-widget-cleanup',
 				get_stylesheet_directory_uri() . '/core/assets/js/c7-widget-cleanup.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/c7-widget-cleanup.js' ),
 				true
 			);
 		} );

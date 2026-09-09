@@ -83,14 +83,14 @@ class SettingsPage {
 				'fw-settings-tabs',
 				get_stylesheet_directory_uri() . '/core/assets/js/settings-tabs.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/settings-tabs.js' ),
 				true
 			);
 			wp_enqueue_style(
 				'fw-admin-settings',
 				get_stylesheet_directory_uri() . '/core/assets/css/admin-settings.css',
 				array(),
-				null
+				Config::asset_version( '/core/assets/css/admin-settings.css' )
 			);
 		} );
 	}

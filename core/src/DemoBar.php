@@ -47,13 +47,13 @@ class DemoBar {
 				'fw-demo-bar',
 				get_stylesheet_directory_uri() . '/core/assets/css/demo-bar.css',
 				array(),
-				null
+				Config::asset_version( '/core/assets/css/demo-bar.css' )
 			);
 			wp_enqueue_script(
 				'fw-demo-bar',
 				get_stylesheet_directory_uri() . '/core/assets/js/demo-bar.js',
 				array(),
-				null,
+				Config::asset_version( '/core/assets/js/demo-bar.js' ),
 				true
 			);
 		} );

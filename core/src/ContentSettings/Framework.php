@@ -194,7 +194,7 @@ class Framework {
 				'fw-repeater-admin',
 				get_stylesheet_directory_uri() . '/core/assets/js/repeater-admin.js',
 				array( 'jquery' ), // wp.media's frame API depends on jQuery/Backbone being present.
-				null,
+				Config::asset_version( '/core/assets/js/repeater-admin.js' ),
 				true
 			);
 		} );
