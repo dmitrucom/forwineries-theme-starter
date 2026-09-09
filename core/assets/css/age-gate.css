@@ -1,0 +1,167 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * Age verification gate. Visibility is controlled entirely by the
+ * "fw-age-gate-active" class on <html> (added by an inline script in
+ * wp_head — see AgeGate::register()) — the first rule below is the only
+ * thing that shows the gate at all, so a visitor with JS disabled never
+ * sees it (fails open, not closed).
+ *
+ * Layout: a full-bleed blurred photo (.fw-age-gate-bg) + a darkening
+ * overlay (.fw-age-gate-overlay), with a centered card (.fw-age-gate-card)
+ * holding either the date-of-birth form or, once age-gate.js determines
+ * the entered date is under the configured minimum age, the refusal
+ * message — never both at once.
+ *
+ * Written entirely against unprefixed var(--fw-*) tokens (see
+ * docs/DESIGN-TOKEN-SCHEMA.md) — every product theme defines these with
+ * its own real values in its own style.css, so this file needs zero
+ * per-theme changes.
+ */
+.fw-age-gate { display: none; position: fixed; inset: 0; z-index: 100000; }
+html.fw-age-gate-active .fw-age-gate { display: block; }
+html.fw-age-gate-active body { overflow: hidden; }
+
+/* Scaled up before the blur so the softened edges never show a hard,
+   unblurred rim at the viewport's boundary. */
+.fw-age-gate-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px);
+  transform: scale(1.1);
+}
+.fw-age-gate-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 8, 11, 0.4);
+}
+.fw-age-gate-panel {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--fw-space-md);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.fw-age-gate-card {
+  position: relative;
+  background: var(--fw-cream);
+  color: var(--fw-charcoal);
+  width: 100%;
+  max-width: 460px;
+  padding: var(--fw-space-lg) var(--fw-space-md);
+  text-align: center;
+  border-radius: var(--fw-radius);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+.fw-age-gate-card .fw-eyebrow { color: var(--fw-olive); }
+.fw-age-gate-card h2 {
+  font-family: var(--fw-font-heading);
+  font-size: 1.9rem;
+  margin: var(--fw-space-xs) 0 var(--fw-space-sm);
+}
+.fw-age-gate-intro {
+  color: var(--fw-charcoal-soft);
+  margin-bottom: var(--fw-space-md);
+}
+
+.fw-age-gate-field { text-align: left; margin-bottom: var(--fw-space-sm); }
+.fw-age-gate-field label,
+.fw-age-gate-dob-field label {
+  display: block;
+  font-family: var(--fw-font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fw-charcoal-soft);
+  margin-bottom: 6px;
+}
+.fw-age-gate-field select,
+.fw-age-gate-dob-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius);
+  background: #fff;
+  color: var(--fw-charcoal);
+  font-family: var(--fw-font-body);
+  font-size: 0.95rem;
+}
+/* Plain number inputs render their browser-default spin arrows, which
+   crowd a 3-up YYYY/MM/DD row — hidden the same way a search field's
+   native "x" clear button typically gets hidden, purely cosmetic. */
+.fw-age-gate-dob-field input::-webkit-outer-spin-button,
+.fw-age-gate-dob-field input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fw-age-gate-dob-field input { -moz-appearance: textfield; }
+
+.fw-age-gate-dob {
+  display: flex;
+  gap: 12px;
+  margin-bottom: var(--fw-space-sm);
+}
+.fw-age-gate-dob-field { flex: 1; text-align: left; min-width: 0; }
+
+.fw-age-gate-error {
+  color: #a33;
+  font-size: 0.85rem;
+  text-align: left;
+  margin: -8px 0 var(--fw-space-sm);
+}
+
+.fw-age-gate-remember {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--fw-charcoal-soft);
+  margin-bottom: var(--fw-space-md);
+  cursor: pointer;
+}
+.fw-age-gate-remember input { margin-top: 3px; flex-shrink: 0; }
+
+.fw-age-gate-submit {
+  display: block;
+  width: 100%;
+  background: var(--fw-clay);
+  color: var(--fw-cream);
+  border: none;
+  padding: 14px;
+  font-family: var(--fw-font-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: var(--fw-radius);
+  transition: background 0.2s ease;
+}
+.fw-age-gate-submit:hover { background: var(--fw-clay-dark); }
+
+.fw-age-gate-disclaimer {
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--fw-charcoal-soft);
+  margin: var(--fw-space-md) 0 0;
+}
+
+.fw-age-gate-refusal { display: none; }
+.fw-age-gate.fw-age-gate--refused .fw-age-gate-form { display: none; }
+.fw-age-gate.fw-age-gate--refused .fw-age-gate-refusal { display: block; }
+.fw-age-gate-refusal p { color: var(--fw-charcoal-soft); }
+
+@media (max-width: 480px) {
+  .fw-age-gate-card { padding: var(--fw-space-md) var(--fw-space-sm); }
+  .fw-age-gate-dob { gap: 8px; }
+}

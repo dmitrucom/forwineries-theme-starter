@@ -1,0 +1,528 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * Commerce7 widget styling: the theme-rendered wine/club card components
+ * (Commerce7\Catalog's render functions), the reservation-availability
+ * widget wrapper (Commerce7\ReservationWidget), and the calendar-
+ * dropdown mobile fix. The --c7-* CSS-variable brand bridge itself is
+ * PHP-generated inline CSS (Commerce7\Integration::register()), not
+ * here — this file is everything else.
+ *
+ * Written entirely against unprefixed var(--fw-*) tokens (see
+ * docs/DESIGN-TOKEN-SCHEMA.md) and the .fw-* class vocabulary
+ * (Config::css()) — every product theme needs zero per-theme changes.
+ */
+
+/* =========================================================
+   WINE CARD + GRID
+   Commerce7\Catalog::render_wines() / render_wines_catalog() /
+   render_related_wines(). --fw-wine-* custom properties are set-once-
+   on-the-grid, inherit-down — unset falls back to the neutral defaults
+   below, so a Featured Wines teaser placed standalone via an Elementor
+   widget can opt into a boxed-card look through its own Style tab
+   without changing the default look here.
+========================================================= */
+.fw-wine-grid {
+  display: grid;
+  grid-template-columns: var(--fw-wine-grid-columns, repeat(auto-fit, minmax(440px, 1fr)));
+  gap: var(--fw-wine-grid-gap, var(--fw-space-xl)) var(--fw-wine-grid-gap, var(--fw-space-lg));
+}
+.fw-wine-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--fw-space-md);
+  background: var(--fw-wine-card-bg, transparent);
+  border-radius: var(--fw-wine-card-radius, 0);
+  padding: var(--fw-wine-card-padding, 0);
+}
+/* Only wines marked "Featured" (Setup tab) get this — everything else
+   stays the plain, boxless layout above. A subtle left accent rather
+   than a filled background box, so it stands out without looking like
+   a different, heavier card style bolted on. */
+.fw-wine-card--featured { border-left: 3px solid var(--fw-olive); padding-left: var(--fw-space-sm); }
+.fw-wine-featured-tag {
+  display: inline-block;
+  color: var(--fw-clay);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+/* Wraps .fw-wine-img so the scarcity badge below has an absolute-
+   position anchor without changing the image's own flex sizing. */
+.fw-wine-card .fw-wine-img-wrap { position: relative; flex: 0 0 var(--fw-wine-img-size, 170px); width: var(--fw-wine-img-size, 170px); }
+.fw-wine-card .fw-wine-img {
+  display: block;
+  margin: 0 auto;
+  width: var(--fw-wine-img-size, 170px);
+  height: auto;
+  max-height: 380px;
+  object-fit: contain;
+}
+/* Distinct from .fw-wine-featured-tag (subtle accent text, "worth
+   noticing") — this is urgency, not curation, so it's an actual filled
+   pill on the image itself where it can't be missed while scanning. */
+.fw-wine-scarcity-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--fw-clay);
+  color: var(--fw-cream);
+  font-family: var(--fw-font-body);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 5px 10px;
+  border-radius: var(--fw-radius);
+  max-width: calc(100% - 16px);
+}
+/* On the product page there's no image wrap to anchor to (Commerce7
+   owns the product image inside #c7-content) — shown inline above the
+   mount instead of pinned to a corner. */
+.fw-wine-scarcity-badge--standalone {
+  position: static;
+  display: inline-block;
+  margin-bottom: var(--fw-space-md);
+  max-width: none;
+}
+.fw-wine-card-body { flex: 1; min-width: 0; text-align: left; padding-top: 4px; }
+.fw-wine-card h3 { margin-bottom: 2px; font-size: 1.5rem; line-height: 1.2; }
+.fw-wine-card h3 a { color: inherit; text-decoration: none; }
+.fw-wine-card h3 a:hover { text-decoration: underline; }
+.fw-wine-card > a { display: block; }
+.fw-wine-subtitle { color: var(--fw-charcoal-soft); font-size: 1rem; margin-bottom: var(--fw-space-sm); }
+.fw-wine-teaser { color: var(--fw-charcoal); font-size: 0.98rem; line-height: 1.6; margin-bottom: var(--fw-space-sm); }
+.fw-wine-meta {
+  color: var(--fw-charcoal-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+@media (max-width: 560px) {
+  .fw-wine-card { flex-direction: column; align-items: center; text-align: center; }
+  .fw-wine-card .fw-wine-img { width: var(--fw-wine-img-size, 170px); flex: none; max-height: 300px; }
+  .fw-wine-card-body { text-align: center; padding-top: 0; }
+  /* The featured card's left accent bar only makes sense in the desktop
+     horizontal layout — once the card stacks into a centered column,
+     that one-sided left padding skews the stack off-center. A top bar
+     stays balanced regardless of centering. */
+  .fw-wine-card--featured {
+    border-left: none;
+    padding-left: 0;
+    border-top: 3px solid var(--fw-olive);
+    padding-top: var(--fw-space-sm);
+  }
+}
+
+/* =========================================================
+   RELATED WINES SLIDER
+   Commerce7\Catalog::render_related_wines() — the "More From {Brand}"
+   rail on a product page. 4 cards visible at a time on desktop, scroll-
+   snapped so touch/trackpad swipe works with zero JS;
+   core/assets/js/related-wines-slider.js only drives the optional
+   prev/next arrow buttons. Reuses .fw-wine-card's image/title/subtitle/
+   buy-button styling via the --slider modifier, same "one card
+   component" rule as everywhere else.
+========================================================= */
+.fw-wine-slider { position: relative; display: flex; align-items: center; gap: var(--fw-space-sm); }
+.fw-wine-slider-track {
+  display: flex;
+  gap: var(--fw-space-md);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+.fw-wine-slider-track::-webkit-scrollbar { display: none; }
+.fw-wine-slider-item {
+  flex: 0 0 calc(25% - var(--fw-space-md) * 3 / 4);
+  scroll-snap-align: start;
+}
+.fw-related-wines-wrap { padding: var(--fw-space-lg) 0; }
+
+.fw-wine-card--slider { flex-direction: column; align-items: center; text-align: center; height: 100%; }
+.fw-wine-card--slider .fw-wine-img-wrap { width: 100%; flex: none; }
+/* Caps bottle height so a related-wine tile stays compact — the base
+   .fw-wine-img rule's own max-height (380px) is for a horizontal
+   catalog card at a fixed 170px width; without this override a
+   100%-width slider column blows the bottle up to its full
+   unconstrained height instead. */
+.fw-wine-card--slider .fw-wine-img { width: 100%; flex: none; max-height: 260px; object-fit: contain; }
+/* Flex column so the buy-widget can be pinned to the bottom via
+   margin-top:auto — without this, a card whose title wraps to one line
+   sits shorter than a two-line title and its price/button row ends up
+   at a different height than its neighbors in the same slider row. */
+.fw-wine-card--slider .fw-wine-card-body { display: flex; flex-direction: column; text-align: center; padding-top: var(--fw-space-xs); flex: 1; }
+.fw-wine-card--slider .fw-wine-card-body h3 { min-height: 2.4em; display: flex; align-items: center; justify-content: center; }
+.fw-wine-card--slider .fw-wine-card-body .c7-buy-product { margin-top: auto; padding-top: var(--fw-space-sm); }
+
+.fw-wine-slider-arrow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--fw-clay);
+  border-radius: 50%;
+  background: var(--fw-cream);
+  color: var(--fw-clay);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.fw-wine-slider-arrow:hover:not(:disabled) { background: var(--fw-clay); color: var(--fw-cream); }
+.fw-wine-slider-arrow:disabled { opacity: 0.3; cursor: default; }
+
+@media (max-width: 900px) {
+  .fw-wine-slider-item { flex-basis: calc(50% - var(--fw-space-md) / 2); }
+}
+@media (max-width: 560px) {
+  /* Peeks the next card at the edge — a deliberate carousel cue that
+     there's more to scroll to, rather than a single full-width card
+     that reads as the only one. */
+  .fw-wine-slider-item { flex-basis: 82%; }
+  .fw-wine-slider-arrow { width: 36px; height: 36px; }
+}
+
+/* =========================================================
+   WINES CATALOG CONTROLS
+   Commerce7\Catalog::render_wines_catalog() + wines-catalog.js.
+   Two zones: type-filter pills on the left, search + varietal + sort
+   grouped on the right — each group sizes to its own content (nowrap)
+   rather than equal shares, so the row stays on one line down to the
+   900px breakpoint below, where it stacks.
+========================================================= */
+.fw-catalog-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--fw-space-md);
+  margin-bottom: var(--fw-space-lg);
+  padding-bottom: var(--fw-space-md);
+  border-bottom: 1px solid rgba(43, 36, 32, 0.12);
+}
+.fw-catalog-filter { display: flex; flex-wrap: nowrap; gap: 8px; flex: 0 0 auto; }
+.fw-catalog-controls-right { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--fw-space-sm); flex: 0 0 auto; margin-left: auto; }
+/* Search, dropdowns, and type buttons all share this same pill shape —
+   one consistent control style across the row instead of rounded
+   buttons next to rectangular boxes. */
+.fw-catalog-pill,
+.fw-catalog-select,
+.fw-catalog-search {
+  background: transparent;
+  border: 1px solid rgba(43, 36, 32, 0.2) !important;
+  border-radius: 999px !important;
+  padding: 8px 18px !important;
+  font-family: var(--fw-font-body);
+  font-size: 0.85rem;
+  color: var(--fw-charcoal) !important;
+}
+.fw-catalog-pill { cursor: pointer; }
+.fw-catalog-pill.is-active,
+.fw-catalog-pill:hover,
+.fw-catalog-pill:focus {
+  background: var(--fw-clay) !important;
+  border-color: var(--fw-clay) !important;
+  color: var(--fw-cream) !important;
+}
+.fw-catalog-select { background: var(--fw-cream) !important; min-width: 160px; }
+/* Icon-first, not text-first: at rest this is just the magnifying glass
+   in a circle-ish pill (42px, no room for the placeholder to actually
+   show) — it only expands into a real text field once focused or once
+   it has a value. :not(:placeholder-shown) keeps it expanded after a
+   value is typed and the field loses focus, instead of snapping back
+   to icon-only and hiding what's currently filtering the grid. */
+.fw-catalog-search-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+.fw-catalog-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: var(--fw-charcoal-soft);
+  pointer-events: none;
+  z-index: 2;
+}
+.fw-catalog-search {
+  background: var(--fw-cream) !important;
+  /* !important: Hello Elementor-style resets (input[type="search"] {
+     width: 100%; }) commonly have an attribute selector PLUS a type
+     selector — specificity (0,1,1) — which edges out a bare class
+     selector like this one (0,1,0). Without !important that rule wins
+     at rest (collapsing to a fallback intrinsic width), and only the
+     :focus state (specificity (0,2,0), which does win) snaps to the
+     correct 200px — visible as the field "shrinking" on click instead
+     of expanding from a stable 42px. */
+  width: 42px !important;
+  min-width: 0 !important;
+  padding-left: 34px !important;
+  transition: width 0.2s ease;
+}
+.fw-catalog-search:focus,
+.fw-catalog-search:not(:placeholder-shown) {
+  width: 200px !important;
+}
+.fw-catalog-search::placeholder { color: var(--fw-charcoal-soft); }
+.fw-catalog-search::-webkit-search-cancel-button { -webkit-appearance: none; }
+.fw-catalog-empty {
+  text-align: center;
+  color: var(--fw-charcoal-soft);
+  padding: var(--fw-space-lg) 0;
+}
+.fw-catalog [hidden] { display: none; }
+
+@media (max-width: 900px) {
+  /* auto-fit + a fixed 440px minimum overflows any container narrower
+     than that instead of shrinking (a well-known CSS Grid trap) — force
+     a single column once there's no room for two anyway. */
+  .fw-wine-grid { grid-template-columns: 1fr; gap: var(--fw-space-lg); }
+
+  .fw-catalog-controls { flex-wrap: wrap; justify-content: center; margin-bottom: var(--fw-space-md); padding-bottom: var(--fw-space-sm); }
+  .fw-catalog-filter,
+  .fw-catalog-controls-right { flex: 1 1 100%; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .fw-catalog-select,
+  .fw-catalog-search { width: 100%; min-width: 0; }
+  .fw-catalog-search-wrap { width: 100%; }
+  .fw-catalog-controls-right { flex-direction: column; align-items: stretch; }
+}
+
+/* =========================================================
+   CLUB TEASER + TIER GRID
+   Commerce7\Catalog::render_club_teaser() (--fw-club-* custom
+   properties: same set-once-inherit-down pattern as --fw-wine-* above)
+   and the /club page's editable tier-comparison grid
+   (core/templates/page-c7-content.php).
+========================================================= */
+.fw-club-grid {
+  display: grid;
+  grid-template-columns: var(--fw-club-grid-columns, repeat(auto-fit, minmax(280px, 1fr)));
+  gap: var(--fw-club-grid-gap, var(--fw-space-md));
+}
+.fw-club-card {
+  background: var(--fw-club-card-bg, var(--fw-clay-dark));
+  color: var(--fw-club-card-color, var(--fw-cream));
+  padding: var(--fw-space-lg) var(--fw-space-md);
+  border-radius: var(--fw-club-card-radius, var(--fw-radius));
+  text-align: center;
+}
+.fw-club-card h3 { color: var(--fw-cream); }
+.fw-club-card .fw-eyebrow { color: var(--fw-olive); }
+
+.fw-club-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--fw-space-md);
+  align-items: start;
+}
+.fw-club-tier-card {
+  background: var(--fw-cream);
+  border: 1px solid rgba(43, 36, 32, 0.1);
+  border-top: 2px solid var(--fw-olive);
+  padding: var(--fw-space-lg) var(--fw-space-md);
+  text-align: center;
+}
+.fw-club-tier-price {
+  color: var(--fw-clay);
+  font-family: var(--fw-font-heading);
+  font-style: italic;
+  font-size: 1.6rem;
+  margin-bottom: var(--fw-space-xs);
+}
+.fw-club-tier-card .c7-club-join-button { margin-top: var(--fw-space-sm); }
+
+/* =========================================================
+   CONFIG NOTICE, CART FALLBACK, PAGE CHROME
+========================================================= */
+.fw-c7-notice {
+  border: 1px dashed var(--fw-olive);
+  background: var(--fw-cream);
+  color: var(--fw-charcoal-soft);
+  padding: var(--fw-space-md);
+  text-align: center;
+  font-size: 0.9rem;
+  border-radius: var(--fw-radius);
+}
+
+/* Commerce7\Integration::render_cart_trigger()'s fallback, shown only
+   until a Tenant ID is configured. */
+.fw-cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fw-font-body);
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--fw-charcoal);
+  background: none;
+  color: var(--fw-charcoal);
+  padding: 9px 18px;
+  border-radius: var(--fw-radius);
+  cursor: pointer;
+}
+.fw-cart-link:hover { border-color: var(--fw-clay); color: var(--fw-clay); }
+.fw-cart-link--disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* core/templates/page-c7-content.php's shared section wrapper — tighter
+   than a marketing page's default hero-sized top padding, since a
+   Commerce7 route (product/cart especially) should read as "get to the
+   content fast". Compounding both classes (.fw-section.fw-c7-page, not
+   just .fw-c7-page) deliberately raises specificity above a bare
+   .fw-section rule regardless of source order. */
+.fw-section.fw-c7-page { min-height: 50vh; padding: var(--fw-space-md) 0; }
+.fw-hero + .fw-section.fw-c7-page { padding-top: var(--fw-space-md); }
+/* Product route only ("Back to Wines" + the PDP itself) — no gap above
+   the back-link at all. */
+.fw-section.fw-c7-page.fw-c7-page--product { padding-top: var(--fw-space-sm); }
+
+.fw-back-link { margin-bottom: var(--fw-space-md); }
+.fw-back-link a { color: var(--fw-charcoal-soft); text-decoration: none; font-size: 0.9rem; }
+.fw-back-link a:hover { color: var(--fw-clay); text-decoration: underline; }
+
+/* core/templates/page-c7-checkout.php intentionally has no header/
+   footer — just center the Commerce7 content column and keep it
+   comfortable on small screens. */
+body.fw-c7-checkout-body { background: var(--fw-cream); }
+.fw-checkout-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--fw-space-lg) var(--fw-space-md);
+}
+@media (max-width: 600px) {
+  .fw-checkout-wrap { padding: var(--fw-space-md) var(--fw-space-sm); }
+}
+@media (max-width: 380px) {
+  /* Extra-narrow phones — Commerce7's own checkout layout already
+     handles this width well internally, it just needs every spare
+     pixel of width we can hand it rather than our own wrapper padding
+     eating into it. */
+  .fw-checkout-wrap { padding: var(--fw-space-md) 10px; }
+}
+
+/* =========================================================
+   RESERVATION WIDGET EMBED
+   Wraps the optional live c7-reservation-availability widget
+   (Commerce7\ReservationWidget) when embedded inline in a homepage CTA
+   band or on the dedicated /reservation page.
+========================================================= */
+.fw-reservation-widget-embed {
+  --c7-field-border-radius: 10px;
+  --c7-button-border-radius: 10px;
+  background: var(--fw-cream);
+  /* A hero band typically sets color:var(--fw-cream) (light) on itself
+     so its heading/paragraph read against a dark photo — this card's
+     own background is that SAME light cream, and without its own color
+     reset it would inherit that light text color too, rendering
+     Commerce7's date/dropdown labels as cream-on-cream (invisible). */
+  color: var(--fw-charcoal);
+  border-radius: 18px;
+  padding: var(--fw-space-sm);
+  margin: var(--fw-space-sm) 0;
+  width: 100%;
+  max-width: 700px;
+  box-sizing: border-box;
+}
+.fw-reservation-widget-embed .c7-required::after { display: none; }
+/* Commerce7's own .c7-reservation__search carries a fixed max-width:
+   905px from their own CSS — wider than either this card's 700px CTA-
+   band cap or the --page variant's cap below. Without this override
+   the form doesn't shrink to fit, it overflows past the card's right
+   edge (the wrapper never clips it), which reads as the card having
+   padding on the left but none on the right. */
+.fw-reservation-widget-embed .c7-reservation__search {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+/* Used on the dedicated /reservation page instead of the CTA-band
+   variant above — there the widget is the whole page's content, not a
+   shortcut in a narrow band. --fw-cream is invisible there (it's the
+   exact page-background color on that route), so this switches to
+   --fw-cream-raised plus a real border and shadow to actually read as
+   a card, centered near Commerce7's own .c7-reservation__search
+   max-width (905px) instead of stretching edge-to-edge. */
+.fw-reservation-widget-embed--page {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--fw-cream-raised);
+  border: 1px solid rgba(43, 36, 32, 0.08);
+  box-shadow: 0 8px 24px rgba(43, 36, 32, 0.12);
+  padding: var(--fw-space-md);
+}
+
+/* The live reservation-availability widget mounted inline in a homepage
+   CTA band needs its calendar dropdown (a full month grid, ~460px) to
+   extend below the band's own shorter height to be visible at all — a
+   clipped dropdown renders a correct internal grid but with everything
+   past the first row invisible. */
+.fw-hero.fw-hero--band { overflow: visible; }
+
+/**
+ * THE CALENDAR-DROPDOWN MOBILE FIX. This is the bug this entire shared-
+ * core rebuild started from — already applied by hand to 4 of the 5
+ * original themes and still missing from Larkhaven when this session
+ * began. Three connected problems, found and fixed in this order (see
+ * docs/LESSONS.md for the full story); shipping them disconnected again
+ * would just re-earn the time they cost to find the first time:
+ *
+ * 1. Commerce7's date-picker dropdown (opened from the Date field) is a
+ *    fixed ~606px box, positioned via an inline `transform` their own
+ *    JS computes from the trigger field's desktop-sized containing
+ *    block. Under ~900px, form fields stack to full width and the
+ *    field's own box shrinks well under 606px, so the fixed-width
+ *    calendar spills off both the card and the viewport — the inline
+ *    transform math doesn't recompute for the new width, so it doesn't
+ *    just clip, it visibly mispositions too. !important is required
+ *    specifically to beat Commerce7's *inline* style attribute.
+ *    Re-anchoring to the field's real box (rather than fighting their
+ *    transform arithmetic) makes it track whatever width mobile
+ *    actually has.
+ *
+ * 2. Re-anchoring the dropdown alone isn't enough — the day grid inside
+ *    is a real <table> (react-day-picker's .rdp-month_grid) that sizes
+ *    to content by default, so it kept overflowing past the now-
+ *    correctly-sized dropdown regardless. table-layout:fixed + width:
+ *    100% makes its columns share the available width equally instead.
+ *
+ * 3. Even with the table fixed, Commerce7's own <td> cells carry a
+ *    hardcoded padding:15px, sized for the original ~86px-wide desktop
+ *    cell (56px of content left over). At a ~43px mobile cell that
+ *    padding alone eats 30 of the 43px, so the day button inside — even
+ *    set to width:100% — has almost no room. The cell's own padding has
+ *    to be trimmed too, not just the button sized.
+ */
+@media (max-width: 900px) {
+  .c7-date-picker-dropdown {
+    position: absolute !important;
+    inset: auto auto auto 0 !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+  .c7-date-picker-dropdown .rdp-month_grid {
+    table-layout: fixed !important;
+    width: 100% !important;
+  }
+  .c7-date-picker-dropdown .rdp-day_button {
+    width: 100% !important;
+    padding: 8px 2px !important;
+    box-sizing: border-box !important;
+  }
+  .c7-date-picker-dropdown .rdp-day,
+  .c7-date-picker-dropdown .rdp-weekday {
+    padding: 2px !important;
+  }
+}

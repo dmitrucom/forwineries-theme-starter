@@ -1,0 +1,106 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * Shared forwineries.com template-demo strip (DemoBar::render()).
+ * Deliberately NOT built from a theme's own brand tokens (--fw-clay etc.)
+ * or fonts — a system font stack and a neutral near-black bar reads as
+ * tooling bolted on top of the site, not a design decision the winery
+ * made. Fixed at the very top, one z-index above .fw-age-gate (100000),
+ * so it stays visible even while the age gate is showing.
+ *
+ * --fw-bar-h is kept in sync with the bar's real (possibly wrapped, on
+ * narrow screens) height by core/assets/js/demo-bar.js; the value below
+ * is just the pre-JS fallback for that same variable.
+ *
+ * Shared contract with each product theme's own (hand-authored, not
+ * core) header.php: the sticky header wrapper must use id="fw-header"
+ * for the html.fw-demo-bar-active rule below to push it down correctly
+ * — this is the one place a per-theme template file needs to match an
+ * exact id core CSS depends on. See docs/ARCHITECTURE.md.
+ */
+.fw-demo-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100001;
+  background: #16181c;
+  color: #f2f2f2;
+}
+.fw-demo-bar-inner {
+  max-width: var(--fw-container);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 7px 20px;
+  font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.fw-demo-bar-label { opacity: 0.85; white-space: nowrap; }
+.fw-demo-bar-skin { font-weight: 600; color: #fff; margin-left: 4px; }
+.fw-demo-switcher { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-left: auto; }
+.fw-demo-switcher a { color: #cfd3d8; text-decoration: none; }
+.fw-demo-switcher a:hover,
+.fw-demo-switcher a:focus { color: #fff; text-decoration: underline; }
+.fw-demo-switcher a.is-current { color: #fff; font-weight: 600; text-decoration: underline; }
+.fw-demo-buy {
+  background: #fff;
+  color: #16181c;
+  padding: 4px 12px;
+  border-radius: 3px;
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fw-demo-buy:hover,
+.fw-demo-buy:focus { background: #d8d8d8; color: #16181c; }
+.fw-demo-bar-close {
+  background: none !important;
+  border: none !important;
+  color: #cfd3d8 !important;
+  font: 20px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  padding: 0 2px !important;
+  margin-left: 2px;
+  cursor: pointer;
+}
+.fw-demo-bar-close:hover,
+.fw-demo-bar-close:focus {
+  background: none !important;
+  color: #fff !important;
+}
+
+/* Reserves space for the fixed bar (JS-synced; this is only the initial
+   value before core/assets/js/demo-bar.js measures the real height) and
+   shifts the sticky header and the age gate's own top edge down to
+   match, so neither renders underneath the bar. All a no-op — zero
+   layout shift — when the bar is hidden, since this class is never
+   printed on <html> in that case. */
+html.fw-demo-bar-active { --fw-bar-h: 34px; }
+html.fw-demo-bar-active .fw-age-gate { top: var(--fw-bar-h); }
+html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); }
+
+/* Session-scoped dismiss (the "×" button, core/assets/js/demo-bar.js) —
+   separate from the permanent "Hide demo bar" admin toggle above:
+   closing it here only lasts for this browsing session (sessionStorage)
+   and only hides the bar itself, not the demo-mode noindex/title
+   behavior elsewhere in DemoBar. demo-bar.js zeroes --fw-bar-h itself
+   when it adds this class, since that happens from a click after the
+   page has already loaded — no matching CSS fallback needed the way
+   the --active rule above has one for its own pre-JS moment. */
+html.fw-demo-bar-dismissed .fw-demo-bar { display: none; }
+
+@media (max-width: 700px) {
+  .fw-demo-bar-inner { padding: 6px 16px; }
+  .fw-demo-switcher { width: 100%; margin-left: 0; order: 3; }
+  /* "Winery template demo {Skin}" + "Request {Skin} · price" no longer
+     both fit on the bar's first row at phone widths, so the buy button
+     was wrapping onto its own line between the label and the switcher —
+     three rows for what reads better as two. The skin name alone (bold,
+     still visible) carries the same identification the full "Winery
+     template demo" prefix did; dropping just the prefix here frees
+     enough width for Request + close to stay on row one with it, and
+     the switcher still gets its own row below either way. */
+  .fw-demo-bar-label-full { display: none; }
+}

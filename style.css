@@ -1,0 +1,812 @@
+/*
+Theme Name:   [Your Winery Name]
+Theme URI:    https://example.com
+Description:  PLACEHOLDER — replace with a real description. Standalone
+              (no parent theme) — built on forwineries-theme-core, the
+              shared library behind this product line. Ships with a
+              hard-coded header/footer (works with the free version of
+              Elementor — no Elementor Pro Theme Builder required) and a
+              real Commerce7 storefront integration (shop, wine club,
+              cart). Every new page created with Elementor automatically
+              inherits the header, footer, and global typography/color
+              system.
+Author:       [Your Name / Studio]
+Version:      0.1.0
+Text Domain:  newtheme
+
+NOTE: deliberately NO "Template:" line — this theme is standalone from
+day one, not a Hello Elementor child theme. Do not add one; see
+forwineries-theme-core/docs/LESSONS.md for the font-cascade bug that
+reintroduces.
+*/
+
+/* =========================================================
+   1. DESIGN TOKENS
+   The canonical --fw-* tokens (clay, cream, charcoal, radius, space-*,
+   etc.) are NOT declared here — they come from functions.php's
+   newtheme_fw_config_array()['tokens'] and are emitted as one :root
+   block by ForWineries\Core\DesignTokens (core/src/DesignTokens.php),
+   enqueued ahead of this stylesheet. Declaring them again here would
+   just be a second, driftable source of truth for the exact values
+   already in functions.php. This block is ONLY for genuinely one-off
+   tokens beyond the canonical 26 — see forwineries-theme-core/docs/
+   DESIGN-TOKEN-SCHEMA.md. Empty on a fresh starter; add your own here
+   only once you have a real one-off need (Heronrest's extra "oatmeal"
+   surface token is a real example of when this gets used).
+========================================================= */
+:root {
+  /* --fw-your-one-off-token: #000000; */
+}
+
+/* Brand-toned text selection — a small detail that makes the whole site
+   feel deliberately designed the moment anyone highlights a sentence. */
+::selection { background: var(--fw-clay); color: var(--fw-cream); }
+
+/* =========================================================
+   2. RESET / BASE
+   The foundation every one of the 5 sibling themes repeats verbatim.
+========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Skip-to-content link (WCAG 2.4.1 "Bypass Blocks") — off-screen until
+   keyboard-focused, then jumps straight above the header. Landing target
+   is <main id="newtheme-main">, opened in header.php right after
+   </header> and closed in footer.php right before <footer>, so it wraps
+   every template's content automatically with zero per-template changes. */
+.newtheme-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 9999;
+  background: var(--fw-charcoal);
+  color: var(--fw-cream);
+  padding: 12px 20px;
+  font-family: var(--fw-font-body);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.newtheme-skip-link:focus { top: 0; }
+
+/* Baseline visible focus ring for every keyboard-focusable element that
+   doesn't already define its own focus treatment — WCAG 2.4.7 "Focus
+   Visible". Nothing in this file sets outline:none, so this is additive,
+   not a fight against a suppressed default. */
+:focus-visible {
+  outline: 2px solid var(--fw-clay);
+  outline-offset: 2px;
+}
+/* On our own dark-background sections (footer, hero, club cards) the
+   accent outline can end up low-contrast against a dark fill — WCAG
+   1.4.11 wants focus indicators at 3:1 against their background. Swap
+   this to a light color once your real 'clay' value is picked, if it
+   turns out dark. */
+#newtheme-footer :focus-visible,
+.fw-hero :focus-visible,
+.fw-club-card :focus-visible,
+.fw-club-tier-card :focus-visible {
+  outline-color: var(--fw-cream);
+}
+
+/* Root cause of a "pink button" bug that hit every sibling theme in this
+   family before it was understood: a Hello Elementor PARENT theme's own
+   reset.css gives every plain, unstyled <button>/[type="button"]/
+   [type="submit"] a hardcoded pink outline/fill by default. This theme
+   is standalone (no parent), so that specific bug can't recur here —
+   this reset is kept anyway so any genuinely unstyled button (an element
+   with no .fw-btn/.c7-btn/.c7-link class at all) still gets an
+   intentional, on-brand look instead of the bare UA-agent default.
+   :not(.c7-reservation-availability *) — Commerce7's own tasting-
+   reservation widget renders its calendar day grid as buttons with
+   complete styling already; excluded so this reset doesn't fight it. */
+[type="button"]:where(:not(.c7-reservation-availability *)),
+[type="submit"]:where(:not(.c7-reservation-availability *)),
+button:where(:not(.c7-reservation-availability *)) {
+  background-color: transparent !important;
+  border: 1px solid var(--fw-charcoal) !important;
+  border-radius: var(--fw-radius-sm) !important;
+  color: var(--fw-charcoal) !important;
+}
+[type="button"]:where(:not(.c7-reservation-availability *)):focus,
+[type="button"]:where(:not(.c7-reservation-availability *)):hover,
+[type="submit"]:where(:not(.c7-reservation-availability *)):focus,
+[type="submit"]:where(:not(.c7-reservation-availability *)):hover,
+button:where(:not(.c7-reservation-availability *)):focus,
+button:where(:not(.c7-reservation-availability *)):hover {
+  background-color: var(--fw-charcoal) !important;
+  border-color: var(--fw-charcoal) !important;
+  color: var(--fw-cream) !important;
+  text-decoration: none !important;
+}
+/* ...EXCEPT icon-only buttons (Commerce7's cart toggle/close, both bare
+   <button> elements containing only an SVG icon) — boxing an icon in a
+   bordered/filled button looks wrong; chrome-free instead. */
+button:has(svg), [type="button"]:has(svg),
+.c7-link.c7-link:has(svg) {
+  border: none !important;
+  background-color: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+button:has(svg):hover, button:has(svg):focus,
+[type="button"]:has(svg):hover, [type="button"]:has(svg):focus,
+.c7-link.c7-link:has(svg):hover, .c7-link.c7-link:has(svg):focus {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* Prevents horizontal scroll from full-bleed sections. Deliberately on
+     <html>, not <body>: overflow-x:hidden on body with no overflow-y set
+     forces the browser to compute overflow-y as auto too (per the CSS
+     Overflow spec), turning body into its own scroll container — that
+     breaks any position:fixed descendant (Commerce7's side-cart drawer
+     included), which then renders relative to that scrolling body box
+     instead of the real viewport. */
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--fw-cream);
+  color: var(--fw-charcoal);
+  font-family: var(--fw-font-body);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  width: 100%;
+}
+
+img, video, iframe { max-width: 100%; height: auto; }
+img { display: block; }
+/* :not(.c7-reservation-availability *) — Commerce7's reservation widget
+   renders its calendar day grid as a real <table> internally; without
+   this exclusion a blanket table reset scrambles that grid. */
+table:where(:not(.c7-reservation-availability *)) { display: block; overflow-x: auto; }
+
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fw-font-heading);
+  font-weight: 500;
+  color: var(--fw-charcoal);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  margin: 0 0 var(--fw-space-sm);
+}
+h1 { font-size: clamp(2.4rem, 4vw, 3.8rem); }
+h2 { font-size: clamp(1.9rem, 3vw, 2.7rem); }
+h3 { font-size: clamp(1.4rem, 2vw, 1.8rem); }
+p { margin: 0 0 var(--fw-space-sm); }
+
+/* Scoped away from Commerce7's own mount points (#c7-content, #c7-cart,
+   #c7-account) — those regions are styled entirely by commerce7.css's
+   own --c7-link-color etc. (see core/src/Commerce7/Integration.php), not
+   by our global anchor color. */
+a:where(:not(#c7-content *, #c7-cart *, #c7-account *)) {
+  color: var(--fw-clay);
+  text-decoration: none;
+  transition: color .2s ease;
+}
+a:where(:not(#c7-content *, #c7-cart *, #c7-account *)):hover { color: var(--fw-clay-dark); }
+
+.fw-eyebrow {
+  display: inline-block;
+  font-family: var(--fw-font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fw-olive);
+  margin-bottom: var(--fw-space-xs);
+}
+/* Breadcrumb trail (functions.php, newtheme_render_breadcrumbs()) —
+   reuses .fw-eyebrow's font/size/color/uppercase wholesale, only toning
+   down the letter-spacing across a whole "Home / Estate / Team" trail. */
+.fw-breadcrumbs.fw-eyebrow { display: block; letter-spacing: 0.06em; margin-bottom: var(--fw-space-md); }
+.fw-breadcrumbs a { color: var(--fw-olive); text-decoration: none; }
+.fw-breadcrumbs a:hover { color: var(--fw-clay); text-decoration: underline; }
+.fw-breadcrumbs [aria-current="page"] { color: var(--fw-charcoal-soft); }
+.fw-breadcrumb-sep { margin: 0 6px; color: var(--fw-charcoal-soft); opacity: 0.5; }
+
+.fw-container {
+  max-width: var(--fw-container);
+  margin: 0 auto;
+  padding: 0 var(--fw-space-md);
+}
+@media (max-width: 600px) {
+  .fw-container { padding: 0 var(--fw-space-sm); }
+}
+
+.fw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: auto;
+  padding: 14px 30px;
+  font-family: var(--fw-font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--fw-charcoal);
+  border-radius: var(--fw-radius-sm);
+  color: var(--fw-charcoal);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--fw-ease, .2s), color var(--fw-ease, .2s), border-color var(--fw-ease, .2s);
+}
+.fw-btn:hover { background: var(--fw-charcoal); color: var(--fw-cream); }
+.fw-btn--solid { background: var(--fw-clay); color: var(--fw-cream); border-color: var(--fw-clay); }
+.fw-btn--solid:hover { background: var(--fw-clay-dark); border-color: var(--fw-clay-dark); color: var(--fw-cream); }
+.fw-btn--accent {
+  border-color: var(--fw-cream);
+  color: var(--fw-cream);
+  background: rgba(0, 0, 0, 0.28);
+}
+.fw-btn--accent:hover { background: var(--fw-cream); color: var(--fw-charcoal); }
+@media (max-width: 480px) {
+  .fw-btn { width: 100%; }
+}
+.fw-btn-row { display: flex; flex-wrap: wrap; gap: var(--fw-space-sm); }
+
+/* =========================================================
+   3. PLACEHOLDER IMAGERY
+   No real photo ships with this starter (see assets/images/README.md) —
+   every hero/split/card image in this theme's own templates, and every
+   core template's own image slot, renders as one of these CSS-only
+   stand-ins whenever its config value is blank, rather than a broken
+   background-image:url(''). .ph-img alone (no modifier) already gets a
+   neutral fill, so core/templates/page-*.php's bare `ph-img` hero
+   sections (no modifier class available to them) still look
+   intentional. Once you have a real photo, delete the ph-* classes from
+   that element — the inline background-image (now non-empty) takes over
+   automatically either way, so leaving the classes in isn't harmful,
+   just redundant.
+========================================================= */
+.ph-img {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  border-radius: var(--fw-radius);
+  background-color: var(--fw-charcoal-soft);
+  background-image: linear-gradient(155deg, #6b6864 0%, #4a4844 55%, #2a2926 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.ph-tag {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  font-family: var(--fw-font-body);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(20, 19, 18, 0.72);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: var(--fw-radius-sm);
+}
+body.newtheme-no-tags .ph-tag { display: none; }
+/* Modifier gradients — cosmetic variety only (all neutral greys, no real
+   brand color guessing); use freely in your own templates, or delete
+   once real photography is in place. */
+.ph-hero { min-height: 640px; }
+.ph-vineyard, .ph-vineyard-row { min-height: 260px; }
+.ph-wine { min-height: 380px; }
+.ph-club { min-height: 460px; }
+.ph-portrait { min-height: 480px; }
+.ph-stone { min-height: 420px; }
+
+/* =========================================================
+   4. SITE HEADER
+========================================================= */
+#newtheme-header,
+#fw-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--fw-cream);
+  border-bottom: 1px solid var(--fw-line);
+}
+.newtheme-topbar {
+  background: var(--fw-ink);
+  color: var(--fw-cream);
+  font-size: 0.78rem;
+}
+.newtheme-topbar .fw-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fw-space-md);
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.newtheme-topbar a { color: var(--fw-cream); }
+.newtheme-topbar a:hover { color: var(--fw-line); }
+@media (max-width: 700px) {
+  .newtheme-topbar span:first-child { display: none; }
+}
+
+.newtheme-header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fw-space-md);
+  padding: 16px 0;
+}
+
+.newtheme-logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  font-family: var(--fw-font-heading);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--fw-charcoal);
+}
+.newtheme-logo img { max-height: 56px; width: auto; }
+.newtheme-logo-sub {
+  font-family: var(--fw-font-body);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fw-charcoal-soft);
+}
+
+#newtheme-primary-nav ul {
+  display: flex;
+  align-items: center;
+  gap: var(--fw-space-md);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#newtheme-primary-nav a {
+  font-family: var(--fw-font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fw-charcoal);
+}
+#newtheme-primary-nav a:hover { color: var(--fw-clay); }
+
+.newtheme-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--fw-space-sm);
+}
+
+.newtheme-nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+}
+.newtheme-nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--fw-charcoal);
+}
+
+@media (max-width: 900px) {
+  .newtheme-nav-toggle { display: flex; }
+  #newtheme-primary-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--fw-cream);
+    border-bottom: 1px solid var(--fw-line);
+    padding: var(--fw-space-md);
+  }
+  #newtheme-primary-nav.is-open { display: block; }
+  #newtheme-primary-nav ul { flex-direction: column; align-items: flex-start; gap: var(--fw-space-sm); }
+}
+
+/* =========================================================
+   5. SITE FOOTER
+========================================================= */
+#newtheme-footer {
+  background: var(--fw-ink);
+  color: var(--fw-cream);
+  padding: var(--fw-space-xl) 0 var(--fw-space-md);
+}
+#newtheme-footer h4 {
+  color: var(--fw-cream);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--fw-space-sm);
+}
+#newtheme-footer a { color: var(--fw-cream); opacity: 0.85; }
+#newtheme-footer a:hover { opacity: 1; }
+#newtheme-footer ul { list-style: none; margin: 0; padding: 0; }
+#newtheme-footer li { margin-bottom: 6px; }
+
+.newtheme-footer-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1.3fr;
+  gap: var(--fw-space-lg);
+  padding-bottom: var(--fw-space-lg);
+  border-bottom: 1px solid rgba(245, 245, 244, 0.15);
+}
+@media (max-width: 900px) {
+  .newtheme-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .newtheme-footer-grid { grid-template-columns: 1fr; }
+}
+
+.newtheme-social { display: flex; gap: var(--fw-space-sm); margin-top: var(--fw-space-sm); }
+.newtheme-social a { display: inline-flex; }
+
+.newtheme-bottom-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fw-space-sm);
+  padding-top: var(--fw-space-md);
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+.newtheme-legal-links { display: flex; flex-wrap: wrap; gap: var(--fw-space-sm); }
+
+/* =========================================================
+   6. HERO
+========================================================= */
+.fw-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--fw-cream);
+  padding: var(--fw-space-xl) var(--fw-space-md);
+  min-height: 560px;
+}
+.fw-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+}
+.fw-hero-content { position: relative; z-index: 1; max-width: 760px; min-width: 0; }
+.fw-hero-content h1,
+.fw-hero-content h2,
+.fw-hero-content p,
+.fw-hero-content .fw-eyebrow { text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+.fw-hero-content h1,
+.fw-hero-content h2 { color: var(--fw-cream); }
+.fw-hero-content .fw-eyebrow { color: var(--fw-cream); }
+.fw-hero-content .fw-btn-row { justify-content: center; margin-top: var(--fw-space-sm); }
+.fw-hero-content--centered { margin: 0 auto; }
+
+.fw-hero--full { min-height: 92vh; }
+.fw-hero--band { min-height: 420px; }
+.fw-hero--compact { min-height: 340px; }
+
+@media (max-width: 600px) {
+  .fw-hero { padding: var(--fw-space-lg) var(--fw-space-sm); min-height: 420px; }
+  .fw-hero--compact { min-height: 300px; }
+}
+
+/* =========================================================
+   7. SECTIONS / LAYOUT
+========================================================= */
+.fw-section { padding: var(--fw-space-xl) 0; }
+.fw-section--tight { padding: var(--fw-space-lg) 0; }
+.fw-section--cream { background: var(--fw-cream-raised); }
+
+.fw-section-head { max-width: 640px; margin: 0 auto var(--fw-space-lg); text-align: center; }
+.fw-section-cta { text-align: center; margin-top: var(--fw-space-lg); }
+
+.fw-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--fw-space-lg);
+  align-items: center;
+}
+.fw-split--reverse { direction: rtl; }
+.fw-split--reverse > * { direction: ltr; }
+.fw-split-media { min-height: 380px; }
+@media (max-width: 760px) {
+  .fw-split { grid-template-columns: 1fr; }
+}
+
+.fw-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--fw-space-md);
+  text-align: center;
+}
+.fw-stat-num {
+  display: block;
+  font-family: var(--fw-font-heading);
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--fw-clay);
+}
+.fw-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fw-charcoal-soft);
+}
+@media (max-width: 560px) {
+  .fw-stats-row { grid-template-columns: 1fr; gap: var(--fw-space-sm); }
+}
+
+/* =========================================================
+   8. WINE GRID / CATALOG (ForWineries\Core\Commerce7\Catalog)
+========================================================= */
+.fw-wine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--fw-space-md);
+}
+.fw-wine-card {
+  background: var(--fw-cream-raised);
+  border-radius: var(--fw-radius);
+  overflow: hidden;
+}
+.fw-wine-img-wrap { position: relative; }
+.fw-wine-img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; }
+.fw-wine-card-body { padding: var(--fw-space-sm); }
+.fw-wine-card-body h3 { font-size: 1.05rem; margin-bottom: 2px; }
+.fw-wine-subtitle { font-size: 0.85rem; color: var(--fw-charcoal-soft); margin-bottom: 6px; }
+.fw-wine-teaser { font-size: 0.88rem; color: var(--fw-charcoal-soft); }
+.fw-wine-featured-tag,
+.fw-wine-scarcity-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--fw-clay);
+  color: var(--fw-cream);
+  padding: 4px 9px;
+  border-radius: var(--fw-radius-sm);
+  margin-bottom: 6px;
+}
+.fw-wine-scarcity-badge { position: absolute; top: 10px; left: 10px; margin: 0; }
+.fw-wine-scarcity-badge--standalone { position: static; display: inline-block; }
+
+.fw-catalog-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fw-space-sm);
+  margin-bottom: var(--fw-space-md);
+}
+.fw-catalog-controls-right { display: flex; gap: var(--fw-space-sm); flex-wrap: wrap; }
+.fw-catalog-filter,
+.fw-catalog-select,
+.fw-catalog-search {
+  font-family: var(--fw-font-body);
+  padding: 8px 12px;
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius-sm);
+  background: var(--fw-cream);
+  color: var(--fw-charcoal);
+}
+.fw-catalog-pill {
+  display: inline-flex;
+  padding: 6px 14px;
+  border: 1px solid var(--fw-line);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  background: var(--fw-cream);
+}
+.fw-catalog-pill.is-active { background: var(--fw-clay); color: var(--fw-cream); border-color: var(--fw-clay); }
+.fw-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--fw-space-md); }
+.fw-catalog-empty { text-align: center; padding: var(--fw-space-lg) 0; color: var(--fw-charcoal-soft); }
+
+.fw-related-wines-wrap { margin-top: var(--fw-space-xl); }
+.fw-wine-slider { display: flex; gap: var(--fw-space-sm); overflow-x: auto; scroll-snap-type: x mandatory; }
+.fw-wine-slider-item { scroll-snap-align: start; flex: 0 0 220px; }
+.fw-wine-slider-arrow {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+}
+
+/* =========================================================
+   9. WINE CLUB
+========================================================= */
+.fw-club-tier-grid,
+.fw-club-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--fw-space-md);
+}
+.fw-club-tier-card,
+.fw-club-card {
+  background: var(--fw-cream-raised);
+  border-radius: var(--fw-radius);
+  padding: var(--fw-space-md);
+  text-align: center;
+}
+.fw-club-tier-price {
+  display: block;
+  font-family: var(--fw-font-heading);
+  font-size: 1.6rem;
+  color: var(--fw-clay);
+  margin: var(--fw-space-xs) 0 var(--fw-space-sm);
+}
+
+/* =========================================================
+   10. TEAM
+========================================================= */
+.fw-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--fw-space-lg);
+}
+.fw-team-card { text-align: center; }
+.fw-team-photo {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: var(--fw-radius);
+  margin-bottom: var(--fw-space-sm);
+}
+.fw-team-card-body h3 { margin-bottom: 2px; }
+.fw-team-role {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fw-olive);
+  margin-bottom: var(--fw-space-xs);
+}
+
+/* =========================================================
+   11. FORMS (contact form, search, honeypot)
+========================================================= */
+.fw-contact-form { display: grid; gap: var(--fw-space-sm); max-width: 620px; }
+.fw-contact-form label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; }
+.fw-contact-form input[type="text"],
+.fw-contact-form input[type="email"],
+.fw-contact-form textarea {
+  width: 100%;
+  font-family: var(--fw-font-body);
+  padding: 10px 12px;
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius-sm);
+  background: var(--fw-cream);
+  color: var(--fw-charcoal);
+}
+/* Honeypot anti-spam field — off-screen, never shown to a real visitor;
+   see core/src/ContactForms.php. */
+.fw-hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.fw-form-notice { padding: 12px 16px; border-radius: var(--fw-radius-sm); margin-bottom: var(--fw-space-sm); }
+.fw-form-notice--success { background: #e4f0e6; color: #1f4d2b; }
+.fw-form-notice--error { background: #f6e2e0; color: #6b2420; }
+
+.newtheme-search-form { display: flex; }
+.newtheme-search-form-field { position: relative; flex: 1; max-width: 420px; }
+.newtheme-search-input {
+  width: 100%;
+  font-family: var(--fw-font-body);
+  padding: 10px 44px 10px 14px;
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius-sm);
+  background: var(--fw-cream);
+  color: var(--fw-charcoal);
+}
+.newtheme-search-submit {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: 34px;
+  border: none !important;
+  background: transparent !important;
+}
+
+/* =========================================================
+   12. COMMERCE7 PAGE SHELLS (checkout, account, reservation)
+========================================================= */
+.fw-c7-page { padding: var(--fw-space-lg) 0; }
+.fw-c7-page--product { padding-top: 0; }
+.fw-checkout-wrap { max-width: 720px; margin: 0 auto; padding: var(--fw-space-lg) var(--fw-space-md); }
+.fw-reservation-widget-embed { margin-top: var(--fw-space-sm); }
+.fw-reservation-widget-embed--page { max-width: 640px; margin-left: auto; margin-right: auto; }
+.fw-back-link { margin-top: var(--fw-space-md); }
+
+/* =========================================================
+   13. BLOG / JOURNAL + EVENTS (theme-specific, not shared fw-* vocab)
+========================================================= */
+.newtheme-blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--fw-space-lg);
+}
+.newtheme-blog-card-media { display: block; position: relative; }
+.newtheme-blog-card-media img,
+.newtheme-blog-card-media-ph { aspect-ratio: 16 / 9; width: 100%; object-fit: cover; }
+.newtheme-blog-card-body { padding-top: var(--fw-space-sm); }
+.newtheme-blog-meta {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fw-charcoal-soft);
+  margin-bottom: 4px;
+}
+.newtheme-event-card { position: relative; }
+.newtheme-event-date-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--fw-clay);
+  color: var(--fw-cream);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 5px 10px;
+  border-radius: var(--fw-radius-sm);
+}
+.newtheme-pagination { margin-top: var(--fw-space-lg); display: flex; gap: var(--fw-space-xs); flex-wrap: wrap; }
+.newtheme-pagination .page-numbers {
+  display: inline-flex;
+  min-width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius-sm);
+  padding: 0 8px;
+}
+.newtheme-pagination .current { background: var(--fw-clay); color: var(--fw-cream); border-color: var(--fw-clay); }
+
+/* Single post/event reading column */
+.newtheme-post-hero img { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
+.newtheme-post-container { max-width: 760px; margin: 0 auto; }
+.newtheme-post-header { text-align: center; margin-bottom: var(--fw-space-lg); }
+.newtheme-post-content { line-height: 1.8; }
+.newtheme-post-content h2 { margin-top: var(--fw-space-lg); }
+.newtheme-post-nav { display: flex; justify-content: space-between; gap: var(--fw-space-sm); margin: var(--fw-space-lg) 0; }
+.newtheme-post-back { text-align: center; margin-top: var(--fw-space-lg); }
+.newtheme-search-form-wrap { margin-bottom: var(--fw-space-lg); }
+.newtheme-404-links { justify-content: center; margin-top: var(--fw-space-md); }
+
+/* =========================================================
+   14. SCROLL REVEAL (opt-in — assets/js/theme.js)
+   No-op (fully visible, no animation) unless BOTH IntersectionObserver
+   exists AND the visitor hasn't asked for reduced motion — theme.js adds
+   "newtheme-reveal-init" to <html> only in that case, which is what
+   switches these rules on at all.
+========================================================= */
+html.newtheme-reveal-init [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s var(--fw-ease, ease), transform 0.6s var(--fw-ease, ease);
+  transition-delay: var(--newtheme-reveal-delay, 0s);
+}
+html.newtheme-reveal-init [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+html.newtheme-reveal-init .fw-hero-content { opacity: 0; transition: opacity 0.7s var(--fw-ease, ease); }
+html.newtheme-reveal-init .fw-hero-content.is-visible { opacity: 1; }

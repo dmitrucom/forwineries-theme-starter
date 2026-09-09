@@ -1,0 +1,283 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * Admin-only chrome for the unified settings page (SettingsPage) — tab
+ * panel layout, collapsible field groups, search filter, sticky save
+ * bar. Deliberately uses WordPress admin's own color language (#2271b1
+ * link blue, standard admin grays) rather than any theme's brand
+ * colors — this lives inside wp-admin chrome, not the public site, and
+ * should look native to it rather than like a themed intrusion. Same
+ * reasoning as core/assets/css/demo-bar.css using a neutral system font
+ * stack instead of brand fonts.
+ *
+ * Enqueued only on the settings page itself
+ * (SettingsPage::register()'s admin_enqueue_scripts check).
+ */
+
+.fw-settings-layout {
+	display: flex;
+	gap: 32px;
+	align-items: flex-start;
+	margin-top: 16px;
+}
+
+/* ---------- Sidebar ---------- */
+
+.fw-settings-sidebar {
+	flex: 0 0 240px;
+	position: sticky;
+	top: 46px; /* clears the WP admin toolbar */
+	max-height: calc(100vh - 60px);
+	overflow-y: auto;
+	padding-right: 8px;
+}
+
+.fw-settings-filter {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 6px 10px;
+	margin-bottom: 8px;
+}
+
+.fw-settings-toc-actions {
+	margin: 0 0 12px;
+	font-size: 12px;
+}
+.fw-settings-toc-actions .button-link {
+	color: #2271b1;
+	text-decoration: none;
+}
+.fw-settings-toc-actions .button-link:hover { text-decoration: underline; }
+.fw-settings-toc-actions .button-link + .button-link::before {
+	content: "\00b7";
+	display: inline-block;
+	margin: 0 6px;
+	color: #a7aaad;
+}
+
+.fw-settings-toc-heading {
+	margin: 16px 0 4px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #646970;
+}
+.fw-settings-toc-heading:first-child { margin-top: 0; }
+
+.fw-settings-toc ul {
+	margin: 0 0 8px;
+	padding: 0;
+	list-style: none;
+	border-left: 2px solid #dcdcde;
+}
+.fw-settings-toc li { margin: 0; }
+.fw-settings-toc a {
+	display: block;
+	padding: 4px 0 4px 12px;
+	margin-left: -2px;
+	border-left: 2px solid transparent;
+	font-size: 13px;
+	text-decoration: none;
+	color: #3c434a;
+}
+.fw-settings-toc a:hover {
+	color: #2271b1;
+	border-left-color: #2271b1;
+}
+
+/* ---------- Main content ---------- */
+
+.fw-settings-main { flex: 1; min-width: 0; }
+
+.fw-settings-category-heading {
+	margin: 28px 0 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid #dcdcde;
+}
+.fw-settings-category-heading:first-child { margin-top: 0; }
+
+/* ---------- Collapsible groups ---------- */
+
+.fw-settings-group {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	margin-bottom: 10px;
+}
+.fw-settings-group[open] { border-color: #c3c4c7; }
+.fw-settings-group summary {
+	cursor: pointer;
+	padding: 12px 16px;
+	font-size: 14px;
+	font-weight: 600;
+	list-style: none; /* remove default browser triangle, custom one below */
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.fw-settings-group summary::-webkit-details-marker { display: none; }
+.fw-settings-group summary::after {
+	content: "\f140"; /* dashicons-arrow-down-alt2 */
+	font-family: dashicons;
+	font-size: 16px;
+	color: #646970;
+	transition: transform 0.15s ease;
+}
+.fw-settings-group[open] summary::after { transform: rotate(180deg); }
+.fw-settings-group summary:hover { background: #f6f7f7; }
+.fw-settings-group summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+.fw-settings-group-body {
+	padding: 4px 16px 16px;
+	border-top: 1px solid #f0f0f1;
+}
+.fw-settings-group-body .form-table { margin-top: 0; }
+
+.fw-settings-group.is-search-hidden { display: none; }
+
+/* ---------- Repeater rows ---------- */
+
+.fw-repeater-field h3 { margin: 16px 0 8px; }
+
+.fw-repeater-row {
+	position: relative;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	padding: 8px 16px 16px;
+	margin-bottom: 10px;
+	max-width: 720px;
+}
+
+.fw-repeater-row-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 0 -16px 8px;
+	padding: 4px 12px 8px 16px;
+	border-bottom: 1px solid #f0f0f1;
+}
+.fw-repeater-row-grip { color: #c3c4c7; }
+.fw-repeater-row-toolbar-buttons {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.fw-repeater-row-toolbar-buttons .button-link {
+	color: #646970;
+	cursor: pointer;
+	padding: 2px;
+}
+.fw-repeater-row-toolbar-buttons .button-link:hover { color: #2271b1; }
+.fw-repeater-row-toolbar-buttons .button-link-delete {
+	cursor: pointer;
+	font-size: 12px;
+	margin-left: 8px;
+}
+/* First row can't move up, last can't move down — communicated by graying
+   the arrow rather than hiding it (keeps the toolbar from reflowing). */
+.fw-repeater-row:first-child .fw-repeater-move-up,
+.fw-repeater-row:last-child .fw-repeater-move-down {
+	opacity: 0.3;
+	pointer-events: none;
+}
+
+.fw-repeater-subfield { margin-bottom: 10px; }
+.fw-repeater-subfield:last-child { margin-bottom: 0; }
+.fw-repeater-subfield > label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+/* ---------- Image field (media library picker) ---------- */
+
+.fw-image-field {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+}
+
+.fw-image-field-preview {
+	flex: 0 0 84px;
+	width: 84px;
+	height: 84px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	/* Checkerboard so transparent logos (press strip PNGs) read correctly. */
+	background:
+		linear-gradient(45deg, #f0f0f1 25%, transparent 25%, transparent 75%, #f0f0f1 75%) 0 0 / 16px 16px,
+		linear-gradient(45deg, #f0f0f1 25%, #fff 25%, #fff 75%, #f0f0f1 75%) 8px 8px / 16px 16px;
+}
+.fw-image-field-preview img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+.fw-image-field-preview .dashicons {
+	color: #c3c4c7;
+	font-size: 28px;
+	width: 28px;
+	height: 28px;
+}
+
+.fw-image-field-controls {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.fw-image-field-controls .fw-image-field-url { width: 100%; max-width: 480px; }
+.fw-image-field-buttons {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.fw-image-field-buttons .button-link-delete {
+	cursor: pointer;
+	font-size: 12px;
+}
+
+/* ---------- Save bar ---------- */
+
+.fw-settings-save-bar {
+	position: sticky;
+	bottom: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 20px;
+	padding: 14px 16px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+.fw-settings-save-bar .button-primary { margin: 0; }
+.fw-settings-save-bar-hint {
+	font-size: 12px;
+	color: #646970;
+}
+
+@media (max-width: 960px) {
+	.fw-settings-layout { flex-direction: column; }
+	.fw-settings-sidebar {
+		position: static;
+		max-height: none;
+		width: 100%;
+		flex: none;
+	}
+	.fw-settings-toc { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+	.fw-settings-toc ul { display: flex; flex-wrap: wrap; gap: 0 12px; border-left: none; }
+	.fw-settings-toc a { padding: 2px 0; border-left: none; }
+}
