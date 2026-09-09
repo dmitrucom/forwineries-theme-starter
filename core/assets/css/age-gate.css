@@ -93,7 +93,13 @@ html.fw-age-gate-active body { overflow: hidden; }
   background: #fff;
   color: var(--fw-charcoal);
   font-family: var(--fw-font-body);
-  font-size: 0.95rem;
+  /* iOS Safari auto-zooms the whole page in when a focused form control's
+     font-size is under 16px, and doesn't reliably zoom back out once this
+     modal closes on blur — the exact "starts zoomed in, stays zoomed in
+     after submitting" bug. 0.95rem (15.2px off the unset-html-font-size
+     16px root) was just under that threshold on every field a visitor
+     has to focus to get through the gate at all. */
+  font-size: 16px;
 }
 /* Plain number inputs render their browser-default spin arrows, which
    crowd a 3-up YYYY/MM/DD row — hidden the same way a search field's
