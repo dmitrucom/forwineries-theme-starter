@@ -109,6 +109,9 @@ $fw_config = new Config( newtheme_fw_config_array() );
 				</nav>
 				<span><?php esc_html_e( 'Please enjoy responsibly.', 'newtheme' ); ?></span>
 			</div>
+			<div class="fw-credit">
+				<a href="https://forwineries.com" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'A ForWineries.com Template', 'newtheme' ); ?></a>
+			</div>
 		</div>
 	</footer>
 

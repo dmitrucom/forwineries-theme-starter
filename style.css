@@ -469,6 +469,9 @@ body.newtheme-no-tags .ph-tag { display: none; }
   opacity: 0.75;
 }
 .newtheme-legal-links { display: flex; flex-wrap: wrap; gap: var(--fw-space-sm); }
+.fw-credit { text-align: center; font-size: 0.68rem; opacity: 0.5; padding-bottom: var(--fw-space-sm); }
+.fw-credit a { color: inherit; text-decoration: none; }
+.fw-credit a:hover { opacity: 1; text-decoration: underline; }
 
 /* =========================================================
    6. HERO
