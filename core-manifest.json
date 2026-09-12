@@ -1,12 +1,12 @@
 {
-  "core_version": "1b20343",
-  "core_commit": "1b20343",
-  "synced_at": "2026-09-12T18:06:01Z",
+  "core_version": "2a20dcb",
+  "core_commit": "2a20dcb",
+  "synced_at": "2026-09-12T19:25:51Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
     "assets/css/commerce7-overrides.css": "ed273065a5869b88d4bda60c7b147242e5d4d89b5766a7865832d3b1a0ac91ee",
-    "assets/css/demo-bar.css": "5f6ed9e5a428a0c0b42e1f1bc908ce4293a898cd2f2469b352f997306c8e99d7",
+    "assets/css/demo-bar.css": "0e49084bb3487660e989a3b2586f02cf44a2818b5a7cb51c5ac568f12684f7ab",
     "assets/css/motion.css": "918857fde843e111d1e1af740fe4cde42d57700eb3df01ac1b42399502dfe2d7",
     "assets/css/press-logos.css": "bfb5b95d3469212c514136c519890d36f97b75e35bd4fd8723feeddc7b4d4e77",
     "assets/css/social-feed.css": "da41cec9b90dd7ee34f71cb1c55fffb912b7895c9ed95f1d41f854cbb5e0401e",

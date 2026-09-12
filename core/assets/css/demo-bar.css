@@ -79,7 +79,27 @@
    printed on <html> in that case. */
 html.fw-demo-bar-active { --fw-bar-h: 34px; }
 html.fw-demo-bar-active .fw-age-gate { top: var(--fw-bar-h); }
-html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); }
+/* margin-top alongside top, not top alone: #fw-header is the very
+   first element in the document, so its sticky `top` offset is active
+   from scroll position zero (it's "stuck" immediately, never in an
+   un-stuck natural position) — but position:sticky reserves flow space
+   at the element's UNSHIFTED natural position regardless of `top`,
+   the same as position:relative. `top` alone visually renders the
+   header --fw-bar-h lower than the space the document actually reserves
+   for it, so whatever comes right after the header in the DOM starts
+   --fw-bar-h too early and renders partly underneath the header's own
+   box. Confirmed live on Heronrest's product page: the "Back to Wines"
+   link sits immediately after the header with nothing else above it,
+   so nearly its entire ~27px height fell inside that overlap and it
+   read as simply missing — but the same overlap exists on every page,
+   it's just usually absorbed by hero padding or a heading's own margin
+   instead of eating actual content. margin-top makes the header's
+   RESERVED space match its rendered position (both become --fw-bar-h
+   from the top) instead of just moving where it's painted, which is
+   what actually closes the gap. .fw-age-gate doesn't need the same
+   fix — position:fixed never reserves flow space at all, with or
+   without a margin, so there's nothing for it to mismatch. */
+html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); margin-top: var(--fw-bar-h); }
 
 /* WordPress's own toolbar (#wpadminbar) is also position:fixed; top:0,
    but at a lower z-index (99999) than this bar (100001) — left alone,
@@ -90,11 +110,17 @@ html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); }
    same height on top of the existing --fw-bar-h offset for the header
    and age gate so nothing renders underneath either bar. */
 body.admin-bar .fw-demo-bar { top: 32px; }
-html.fw-demo-bar-active body.admin-bar #fw-header,
+html.fw-demo-bar-active body.admin-bar #fw-header {
+  top: calc(var(--fw-bar-h) + 32px);
+  margin-top: calc(var(--fw-bar-h) + 32px);
+}
 html.fw-demo-bar-active body.admin-bar .fw-age-gate { top: calc(var(--fw-bar-h) + 32px); }
 @media screen and (max-width: 782px) {
   body.admin-bar .fw-demo-bar { top: 46px; }
-  html.fw-demo-bar-active body.admin-bar #fw-header,
+  html.fw-demo-bar-active body.admin-bar #fw-header {
+    top: calc(var(--fw-bar-h) + 46px);
+    margin-top: calc(var(--fw-bar-h) + 46px);
+  }
   html.fw-demo-bar-active body.admin-bar .fw-age-gate { top: calc(var(--fw-bar-h) + 46px); }
 }
 
