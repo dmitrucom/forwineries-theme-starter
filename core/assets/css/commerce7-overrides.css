@@ -476,6 +476,57 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
   .fw-checkout-wrap { padding: var(--fw-space-md) var(--fw-space-sm); }
 }
 
+/* .fw-checkout-wrap above turned out to be powerless on the ACTUAL
+   Commerce7 checkout app, discovered only by inspecting it live with a
+   real cart + a real automated click through cart -> checkout (a plain
+   page load of the URL redirects to an empty cart and never mounts the
+   real thing, which is why this took this long to find): Commerce7's
+   own checkout JS sets `#c7-content` to an INLINE style of
+   `position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+   padding: 0px;` the moment it mounts. A fixed, 100%-viewport element
+   ignores every ancestor's padding by definition, so .fw-checkout-wrap
+   padding rendered correctly on .fw-checkout-wrap itself and had
+   ZERO visual effect on anything inside #c7-content once Commerce7's
+   JS took over, no matter what value it was set to. The padding has
+   to land on Commerce7's OWN internal classes instead, since those are
+   the only elements actually still in normal flow inside the fixed
+   viewport-filling shell. Confirmed via commerce7.css: .c7-checkout__header,
+   .c7-checkout__header--mobile, .c7-checkout__content, and
+   .c7-checkout__footer only get `max-width: 600px; margin: 0 auto;`
+   (which does nothing below 600px, since the element is already
+   narrower than that) — .c7-checkout__content additionally gets a
+   built-in `padding: 0 20px 140px`, but header/header--mobile/footer
+   get NO side padding from Commerce7 at all, which is exactly the
+   step row, logo, and Prop 65 warning text sitting flush against the
+   screen edge in every report. .fw-checkout-wrap is left in place
+   above (harmless, and covers the brief pre-mount instant before
+   Commerce7's JS applies its own inline style). */
+.c7-checkout__header,
+.c7-checkout__header--mobile,
+.c7-checkout__content,
+.c7-checkout__footer {
+  padding-left: var(--fw-space-md);
+  padding-right: var(--fw-space-md);
+}
+@media (max-width: 600px) {
+  .c7-checkout__header,
+  .c7-checkout__header--mobile,
+  .c7-checkout__content,
+  .c7-checkout__footer {
+    padding-left: calc(var(--fw-space-sm) + var(--fw-space-xs));
+    padding-right: calc(var(--fw-space-sm) + var(--fw-space-xs));
+  }
+}
+@media (max-width: 380px) {
+  .c7-checkout__header,
+  .c7-checkout__header--mobile,
+  .c7-checkout__content,
+  .c7-checkout__footer {
+    padding-left: var(--fw-space-sm);
+    padding-right: var(--fw-space-sm);
+  }
+}
+
 /* =========================================================
    RESERVATION WIDGET EMBED
    Wraps the optional live c7-reservation-availability widget
