@@ -11,7 +11,7 @@ Description:  PLACEHOLDER — replace with a real description. Standalone
               inherits the header, footer, and global typography/color
               system.
 Author:       [Your Name / Studio]
-Version:      0.1.0
+Version:      0.1.1
 Text Domain:  newtheme
 
 NOTE: deliberately NO "Template:" line — this theme is standalone from
@@ -731,12 +731,18 @@ body.newtheme-no-tags .ph-tag { display: none; }
 /* =========================================================
    12. COMMERCE7 PAGE SHELLS (checkout, account, reservation)
 ========================================================= */
-.fw-c7-page { padding: var(--fw-space-lg) 0; }
-.fw-c7-page--product { padding-top: 0; }
-.fw-checkout-wrap { max-width: 720px; margin: 0 auto; padding: var(--fw-space-lg) var(--fw-space-md); }
-.fw-reservation-widget-embed { margin-top: var(--fw-space-sm); }
-.fw-reservation-widget-embed--page { max-width: 640px; margin-left: auto; margin-right: auto; }
-.fw-back-link { margin-top: var(--fw-space-md); }
+/* .fw-c7-page, .fw-checkout-wrap, .fw-reservation-widget-embed, and
+   .fw-back-link all moved to forwineries-theme-core's
+   core/assets/css/commerce7-overrides.css during the shared-core
+   migration — core/templates/page-c7-content.php and page-c7-checkout.php
+   already emit exactly these class names. This was a stale duplicate
+   with older values (720px instead of 760px, no mobile padding
+   reduction at all on .fw-checkout-wrap; a bare .fw-c7-page instead of
+   core's .fw-section.fw-c7-page, which was compounded specifically to
+   outrank a bare single-class copy like this one) found 2026-09-12
+   while auditing this repo after discovering it had fallen off
+   forwineries-theme-core's sync list entirely. Removed rather than
+   updated to match, same as the other product themes. */
 
 /* =========================================================
    13. BLOG / JOURNAL + EVENTS (theme-specific, not shared fw-* vocab)
