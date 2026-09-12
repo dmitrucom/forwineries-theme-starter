@@ -141,22 +141,7 @@ get_header();
 		<?php elseif ( $fw_reservation_widget_html ) : ?>
 			<div class="fw-reservation-widget-embed fw-reservation-widget-embed--page"><?php echo $fw_reservation_widget_html; ?></div>
 		<?php elseif ( $fw_club_tiers ) : ?>
-			<div class="fw-club-tier-grid">
-				<?php foreach ( $fw_club_tiers as $fw_tier ) :
-					$fw_tier_name  = isset( $fw_tier['name'] ) ? $fw_tier['name'] : '';
-					$fw_tier_price = isset( $fw_tier['price'] ) ? $fw_tier['price'] : '';
-					$fw_tier_desc  = isset( $fw_tier['description'] ) ? $fw_tier['description'] : '';
-					$fw_tier_slug  = isset( $fw_tier['slug'] ) ? trim( $fw_tier['slug'] ) : '';
-					if ( ! $fw_tier_name ) continue;
-					?>
-					<div class="fw-club-tier-card">
-						<h3><?php echo esc_html( $fw_tier_name ); ?></h3>
-						<?php if ( $fw_tier_price ) : ?><div class="fw-club-tier-price"><?php echo esc_html( $fw_tier_price ); ?></div><?php endif; ?>
-						<?php if ( $fw_tier_desc ) : ?><p><?php echo esc_html( $fw_tier_desc ); ?></p><?php endif; ?>
-						<?php echo Integration::render_club_join( $fw_config, $fw_tier_slug ? array( 'slug' => $fw_tier_slug ) : array() ); ?>
-					</div>
-				<?php endforeach; ?>
-			</div>
+			<?php echo Integration::render_membership_tiers( $fw_config, array( 'tiers' => $fw_club_tiers ) ); ?>
 		<?php else : ?>
 			<div id="c7-content"></div>
 		<?php endif; ?>

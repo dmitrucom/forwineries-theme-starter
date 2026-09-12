@@ -109,7 +109,14 @@ class Integration {
 			$vars = apply_filters( $config->slug() . '_c7_brand_vars', array(
 				'--c7-primary-color'             => 'var(--fw-clay)',
 				'--c7-primary-color-dark'        => 'var(--fw-clay-dark)',
-				'--c7-primary-color-focus'       => 'rgba(92, 26, 36, 0.18)',
+				// Was a hardcoded rgba(92, 26, 36, 0.18) literal — a fixed
+				// wine-red tint that doesn't track each theme's actual
+				// accent color. Tied to --fw-clay-rgb (the DesignTokens-
+				// emitted RGB-channel companion to each theme's own accent
+				// token — see DesignTokens::css()) so the focus tint is
+				// always that theme's real primary color, not a borrowed
+				// literal from whichever theme it was last tuned against.
+				'--c7-primary-color-focus'       => 'rgba(var(--fw-clay-rgb), 0.18)',
 				'--c7-primary-button-bg'         => 'var(--fw-clay)',
 				'--c7-primary-button-bg-hover'   => 'var(--fw-clay-dark)',
 				'--c7-primary-button-text-color' => 'var(--fw-cream)',
@@ -131,7 +138,21 @@ class Integration {
 				'--c7-button-border-radius'      => 'var(--fw-radius)',
 				'--c7-field-border-radius'       => 'var(--fw-radius)',
 				'--c7-field-bg'                  => 'var(--fw-cream)',
-				'--c7-field-border-color'        => 'rgba(43, 36, 32, 0.2)',
+				// Was a hardcoded rgba(43, 36, 32, 0.2) literal — a fixed
+				// dark-brown border tuned against the 4 light/cream themes
+				// (where --fw-charcoal is their dark text color, so a dark
+				// border at low opacity reads as a subtle line on a light
+				// field). Vespera inverts that relationship (--fw-charcoal
+				// is its LIGHT ivory text color, --fw-cream its near-black
+				// field background), so the same literal put a near-black
+				// border on a near-black field — confirmed live: Date/Time/
+				// No of Guests fields on the reservation widget with no
+				// visible boundary at all. --fw-charcoal-rgb (DesignTokens'
+				// RGB-channel companion to each theme's own body-text
+				// token) always matches whichever end of the light/dark
+				// spectrum that theme's fields actually sit on. Bumped
+				// 0.2 -> 0.3 at the same time for a more definite edge.
+				'--c7-field-border-color'        => 'rgba(var(--fw-charcoal-rgb), 0.3)',
 				'--c7-cart-count-bg'             => 'var(--fw-clay)',
 				'--c7-cart-count-text-color'     => 'var(--fw-cream)',
 				// commerce7.css ships its own 'body { background: var(--c7-bg) }'
@@ -149,7 +170,10 @@ class Integration {
 				'--c7-bg'                        => 'var(--fw-cream)',
 				'--c7-bg-alt'                    => 'var(--fw-cream)',
 				'--c7-block-bg'                  => 'var(--fw-cream)',
-				'--c7-block-border-color'        => 'rgba(43, 36, 32, 0.08)',
+				// Same literal-vs-inverted-palette bug as
+				// --c7-field-border-color above, one entry up — see that
+				// comment. Bumped 0.08 -> 0.12 alongside the token swap.
+				'--c7-block-border-color'        => 'rgba(var(--fw-charcoal-rgb), 0.12)',
 			) );
 
 			$css = ":root {\n";
@@ -159,6 +183,57 @@ class Integration {
 			$css .= "}\n";
 
 			wp_add_inline_style( 'commerce7', $css );
+
+			/**
+			 * The product detail page is its OWN design system, not part of
+			 * commerce7.css at all: commerce7.js injects a `.pdp-root`
+			 * `<style>` block client-side, at runtime, once it detects a
+			 * product-page route. That block hardcodes a fixed literal
+			 * palette (confirmed live: `--pdp-accent: #a8532f`, `--pdp-text:
+			 * #2b2420`, Spectral/Jost fonts) completely independent of the
+			 * --c7-* bridge above — the exact same literal on Larkhaven and
+			 * Vespera alike, regardless of either theme's actual brand
+			 * colors. `--fw-charcoal`/`--fw-cream` already resolve to the
+			 * correct text/background pairing for whichever end of the
+			 * light/dark spectrum a theme sits on (that's the same
+			 * inversion Vespera relies on elsewhere), so one rule set
+			 * covers both the light default and its `.pdp-on-dark` variant
+			 * without branching on that class.
+			 *
+			 * `!important` on every property, not just higher specificity:
+			 * commerce7.js appends its `.pdp-root` block to the document
+			 * well after this server-rendered one, so normal source order
+			 * would let its later literal win regardless of selector
+			 * weight — custom properties accept `!important` exactly like
+			 * any other declaration, and that's what actually guarantees
+			 * this wins on every page load, not just some.
+			 *
+			 * Toggleable because a site that already configured a design
+			 * in Commerce7's own Product Page customizer, and wants THAT
+			 * instead, needs a way to fall back to Commerce7's own output.
+			 */
+			$pdp_brand_match = get_option( $config->option_key( 'c7_pdp_brand_match' ), '1' ) !== '0';
+			if ( $pdp_brand_match ) {
+				$pdp_vars = apply_filters( $config->slug() . '_c7_pdp_brand_vars', array(
+					'--pdp-accent'         => 'var(--fw-clay)',
+					'--pdp-accent-dark'    => 'var(--fw-clay-dark)',
+					'--pdp-text'           => 'var(--fw-charcoal)',
+					'--pdp-text-heading'   => 'var(--fw-clay-dark)',
+					'--pdp-border'         => 'rgba(var(--fw-charcoal-rgb), 0.14)',
+					'--pdp-band-bg'        => 'rgba(var(--fw-charcoal-rgb), 0.04)',
+					'--pdp-btn-hover-text' => 'var(--fw-cream)',
+					'--pdp-font-serif'     => 'var(--fw-font-heading)',
+					'--pdp-font-sans'      => 'var(--fw-font-body)',
+				) );
+
+				$pdp_css = ".pdp-root {\n";
+				foreach ( $pdp_vars as $prop => $value ) {
+					$pdp_css .= "\t" . $prop . ': ' . $value . " !important;\n";
+				}
+				$pdp_css .= "}\n";
+
+				wp_add_inline_style( 'commerce7', $pdp_css );
+			}
 		} );
 
 		add_action( 'wp_footer', function () use ( $config ) {
@@ -199,6 +274,7 @@ class Integration {
 			register_setting( $settings_group, $config->option_key( 'c7_reservation_type_slug' ), 'sanitize_title' );
 			register_setting( $settings_group, $config->option_key( 'c7_featured_wine_slugs' ), 'sanitize_text_field' );
 			register_setting( $settings_group, $config->option_key( 'c7_wine_badges' ), 'sanitize_textarea_field' );
+			register_setting( $settings_group, $config->option_key( 'c7_pdp_brand_match' ), 'sanitize_text_field' );
 		} );
 
 		add_action( 'admin_post_fw_c7_flush_rewrites', function () use ( $config ) {
@@ -222,6 +298,24 @@ class Integration {
 		SettingsPage::add_tab( 'setup', __( 'Setup', $config->text_domain() ), function () use ( $config ) {
 			self::render_settings_tab( $config );
 		}, 10 );
+	}
+
+	/**
+	 * Every checkbox is preceded by a hidden input of the same name carrying
+	 * "0": an unchecked box submits nothing, and the Settings API would then
+	 * leave the option untouched. PHP keeps the last value for a repeated
+	 * name, so a checked box still wins with "1". Same pattern as Motion's
+	 * own private helper of the same name (Motion.php) — kept as a separate
+	 * copy here rather than a shared one since neither class currently
+	 * depends on the other.
+	 */
+	private static function checkbox( string $name, bool $checked, string $label = '' ): void {
+		printf(
+			'<input type="hidden" name="%1$s" value="0"><label><input type="checkbox" name="%1$s" value="1" %2$s> %3$s</label>',
+			esc_attr( $name ),
+			checked( $checked, true, false ),
+			esc_html( $label )
+		);
 	}
 
 	private static function render_settings_tab( Config $config ): void {
@@ -280,6 +374,23 @@ class Integration {
 						<td>
 							<input type="text" id="<?php echo esc_attr( $config->option_key( 'c7_reservation_type_slug' ) ); ?>" name="<?php echo esc_attr( $config->option_key( 'c7_reservation_type_slug' ) ); ?>" class="regular-text" value="<?php echo esc_attr( get_option( $config->option_key( 'c7_reservation_type_slug' ) ) ); ?>">
 							<p class="description"><?php esc_html_e( "Leave blank to just link to Commerce7's own /reservation page (the default). Set this to embed a live booking calendar directly on the Reservations page and the homepage instead — find the slug under Commerce7 Admin > Reservations > Reservation Types.", $td ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Product page styling', $td ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th><?php esc_html_e( 'Match brand colors', $td ); ?></th>
+						<td>
+							<?php
+							self::checkbox(
+								$config->option_key( 'c7_pdp_brand_match' ),
+								get_option( $config->option_key( 'c7_pdp_brand_match' ), '1' ) !== '0',
+								__( "Use this theme's own colors and fonts on the product page", $td )
+							);
+							?>
+							<p class="description"><?php esc_html_e( "Commerce7's product page ships its own fixed accent color and fonts, the same on every site, regardless of theme. Checked (the default) overrides that with this theme's own brand colors and typography. Uncheck only if you've customized the product page design yourself in Commerce7's own admin and want that instead.", $td ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -403,6 +514,50 @@ class Integration {
 			'<div class="c7-club-join-button" data-club-slug="%s" data-join-text="%s" data-edit-text="%s"></div>',
 			esc_attr( $atts['slug'] ), esc_attr( $atts['join_text'] ), esc_attr( $atts['edit_text'] )
 		);
+	}
+
+	/**
+	 * Hand-curated membership tier cards — each row is its own admin-
+	 * entered name/price/description PLUS its own independent Commerce7
+	 * club slug, so a 3-tier page renders 3 real "Join the Club" buttons
+	 * each wired to a DIFFERENT club plan (falling back to the account-
+	 * wide default slug via render_club_join() when a row leaves it
+	 * blank, same as every other single join button in this file).
+	 * Deliberately not REST-driven like Catalog::render_club_teaser() —
+	 * no optional App ID/Secret Key needed, since the copy is admin-typed
+	 * rather than pulled live, which also means this keeps working if a
+	 * buyer never bothers configuring REST credentials at all.
+	 *
+	 * Single source of truth for this markup — both the "Wine Clubs"
+	 * page route (core/templates/page-c7-content.php) and the Elementor/
+	 * Gutenberg "Membership Tiers" widget (Blocks::block_definitions())
+	 * call this same method, so there is exactly one place a tier card's
+	 * markup can drift from the other.
+	 */
+	public static function render_membership_tiers( Config $config, array $atts = array() ): string {
+		$tiers = isset( $atts['tiers'] ) && is_array( $atts['tiers'] ) ? $atts['tiers'] : array();
+		if ( ! $tiers ) return '';
+
+		ob_start();
+		?>
+		<div class="fw-club-tier-grid">
+			<?php foreach ( $tiers as $tier ) :
+				$name  = isset( $tier['name'] ) ? trim( $tier['name'] ) : '';
+				$price = isset( $tier['price'] ) ? trim( $tier['price'] ) : '';
+				$desc  = isset( $tier['description'] ) ? trim( $tier['description'] ) : '';
+				$slug  = isset( $tier['slug'] ) ? trim( $tier['slug'] ) : '';
+				if ( ! $name ) continue;
+				?>
+				<div class="fw-club-tier-card">
+					<h3><?php echo esc_html( $name ); ?></h3>
+					<?php if ( $price ) : ?><div class="fw-club-tier-price"><?php echo esc_html( $price ); ?></div><?php endif; ?>
+					<?php if ( $desc ) : ?><p><?php echo esc_html( $desc ); ?></p><?php endif; ?>
+					<?php echo self::render_club_join( $config, $slug ? array( 'slug' => $slug ) : array() ); ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

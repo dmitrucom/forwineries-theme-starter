@@ -112,6 +112,19 @@ class Events {
 		add_action( 'admin_init', function () use ( $config ) {
 			self::seed( $config );
 		} );
+
+		// Registered (not enqueued) here — only actually loaded on a
+		// request that places render_upcoming_widget() somewhere, via
+		// wp_enqueue_style() inside that method itself, so a page never
+		// pays for this stylesheet unless the widget is really on it.
+		add_action( 'wp_enqueue_scripts', function () use ( $config ) {
+			wp_register_style(
+				'fw-upcoming-events',
+				get_stylesheet_directory_uri() . '/core/assets/css/upcoming-events.css',
+				array(),
+				Config::asset_version( '/core/assets/css/upcoming-events.css' )
+			);
+		} );
 	}
 
 	private static function render_meta_box( Config $config, $post ): void {
@@ -187,6 +200,82 @@ class Events {
 				),
 			),
 		) );
+	}
+
+	/**
+	 * The general-purpose "Upcoming Events" flagship widget — same
+	 * upcoming/soonest-first query as the homepage's own hardcoded
+	 * section and the /events archive, packaged so a buyer can drop it
+	 * on any page via Elementor. Deliberately independent of each
+	 * theme's own {prefix}-blog-card/{prefix}-event-card CSS (see
+	 * upcoming-events.css's own docblock) rather than reusing it — the
+	 * real archive page's design is genuinely per-theme, so this can't
+	 * safely point at it without either forking per theme or risking a
+	 * regression on an already-shipped page.
+	 *
+	 * Renders nothing at all when there are zero upcoming events (never
+	 * an empty "Upcoming Events" heading over a blank grid) — same
+	 * never-show-a-broken-widget rule as every other Commerce7 widget in
+	 * this codebase, extended here to "nothing to show" rather than
+	 * "not configured yet".
+	 */
+	public static function render_upcoming_widget( Config $config, array $atts = array() ): string {
+		$limit = isset( $atts['limit'] ) ? max( 1, (int) $atts['limit'] ) : 3;
+		$events = self::upcoming( $config, $limit );
+		if ( ! $events ) return '';
+
+		wp_enqueue_style( 'fw-upcoming-events' );
+
+		$eyebrow        = isset( $atts['eyebrow'] ) ? trim( $atts['eyebrow'] ) : '';
+		$heading        = isset( $atts['heading'] ) ? trim( $atts['heading'] ) : '';
+		$details_label  = ( isset( $atts['details_label'] ) && $atts['details_label'] !== '' ) ? $atts['details_label'] : __( 'Details & RSVP', $config->text_domain() );
+		$see_all_url    = ( isset( $atts['see_all_url'] ) && $atts['see_all_url'] !== '' ) ? $atts['see_all_url'] : home_url( '/events' );
+		$see_all_label  = ( isset( $atts['see_all_label'] ) && $atts['see_all_label'] !== '' ) ? $atts['see_all_label'] : __( 'See All Events', $config->text_domain() );
+
+		ob_start();
+		?>
+		<div class="fw-upcoming-events-wrap">
+			<?php if ( $eyebrow || $heading ) : ?>
+				<div class="fw-section-head">
+					<?php if ( $eyebrow ) : ?><span class="fw-eyebrow"><?php echo esc_html( $eyebrow ); ?></span><?php endif; ?>
+					<?php if ( $heading ) : ?><h2><?php echo esc_html( $heading ); ?></h2><?php endif; ?>
+				</div>
+			<?php endif; ?>
+			<div class="fw-upcoming-events-grid">
+				<?php foreach ( $events as $event ) :
+					$permalink   = get_permalink( $event );
+					$date        = self::date_display( $event->ID );
+					$time        = get_post_meta( $event->ID, 'event_time', true );
+					$has_thumb   = has_post_thumbnail( $event );
+					// No universal fallback image to reach for here (unlike
+					// a per-theme asset such as Favicon's own convention) —
+					// an event with no featured photo just skips the media
+					// block entirely and shows its date inline instead,
+					// rather than needing a bundled stock photo this core
+					// class has no theme-specific path to.
+					$meta_bits   = array_filter( array( $has_thumb ? '' : $date, $time ) );
+					?>
+					<article class="fw-upcoming-event-card">
+						<?php if ( $has_thumb ) : ?>
+							<a class="fw-upcoming-event-media" href="<?php echo esc_url( $permalink ); ?>" tabindex="-1" aria-hidden="true">
+								<?php echo get_the_post_thumbnail( $event, 'large' ); ?>
+								<?php if ( $date ) : ?><span class="fw-upcoming-event-date-badge"><?php echo esc_html( $date ); ?></span><?php endif; ?>
+							</a>
+						<?php endif; ?>
+						<div class="fw-upcoming-event-body">
+							<?php if ( $meta_bits ) : ?><span class="fw-upcoming-event-meta"><?php echo esc_html( implode( ' · ', $meta_bits ) ); ?></span><?php endif; ?>
+							<h3><a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( get_the_title( $event ) ); ?></a></h3>
+							<a class="fw-btn" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $details_label ); ?></a>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+			<div class="fw-section-cta">
+				<a class="fw-btn" href="<?php echo esc_url( $see_all_url ); ?>"><?php echo esc_html( $see_all_label ); ?></a>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

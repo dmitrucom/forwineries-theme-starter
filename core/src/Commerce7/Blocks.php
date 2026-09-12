@@ -4,6 +4,10 @@
 namespace ForWineries\Core\Commerce7;
 
 use ForWineries\Core\Config;
+use ForWineries\Core\Events;
+use ForWineries\Core\PressLogos;
+use ForWineries\Core\Testimonials;
+use ForWineries\Core\SocialFeed;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -166,6 +170,144 @@ class Blocks {
 					),
 				),
 			),
+			'flagship-wine' => array(
+				'title'       => __( 'Commerce7 — Flagship Wine', $td ),
+				'description' => __( "A live product spotlight — set a Commerce7 product slug to automatically pull its photo, name, and tasting note (with a real Add to Cart button), or override any of them by hand. Needs the optional App ID/Secret Key under Setup to pull live product data; without that, only your own overrides show.", $td ),
+				'icon'        => 'star',
+				'render'      => function ( $atts ) use ( $config ) { return Catalog::render_flagship_wine( $config, $atts ); },
+				'fields'      => array(
+					'slug'    => array( 'type' => 'string', 'label' => __( 'Commerce7 product slug', $td ), 'default' => '' ),
+					'eyebrow' => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => '' ),
+					'heading' => array( 'type' => 'string', 'label' => __( 'Heading override (optional — defaults to the product\'s own title)', $td ), 'default' => '' ),
+					'image'   => array( 'type' => 'image', 'label' => __( 'Photo override (optional — defaults to the product\'s own photo)', $td ), 'default' => '' ),
+					'note'    => array( 'type' => 'textarea', 'label' => __( 'Tasting note override (optional — defaults to the product\'s own teaser/subtitle)', $td ), 'default' => '' ),
+				),
+			),
+			'reservation-band' => array(
+				'title'       => __( 'Commerce7 — Tastings by Appointment', $td ),
+				'description' => __( 'A ready-made full-bleed "Reserve a Tasting" band — heading, optional photo, and the live Commerce7 availability calendar (or a plain button when no reservation type slug is set), pre-fixed for the calendar dropdown\'s known mobile/clipping quirks. Configure a default reservation type slug under Setup, or set one per instance below.', $td ),
+				'icon'        => 'calendar-alt',
+				'render'      => function ( $atts ) use ( $config ) { return ReservationWidget::render_band( $config, $atts ); },
+				'fields'      => array(
+					'eyebrow' => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => __( 'Tastings by Appointment', $td ) ),
+					'heading' => array( 'type' => 'string', 'label' => __( 'Heading', $td ), 'default' => __( 'Reserve a Tasting', $td ) ),
+					'intro'   => array( 'type' => 'textarea', 'label' => __( 'Intro paragraph', $td ), 'default' => __( 'Pick a date and time below — tastings are seated, by appointment only, and kept small so every visit feels unhurried.', $td ) ),
+					'image'   => array( 'type' => 'image', 'label' => __( 'Background photo (optional)', $td ), 'default' => '' ),
+					'slug'    => array( 'type' => 'string', 'label' => __( 'Reservation type slug (optional — leave blank for the default from Setup)', $td ), 'default' => '' ),
+				),
+			),
+			'testimonials' => array(
+				'title'       => __( 'Testimonials', $td ),
+				'description' => __( 'Quote cards — guest reviews, press mentions, ratings. Renders nothing at all until at least one row has a quote.', $td ),
+				'icon'        => 'format-quote',
+				'render'      => function ( $atts ) use ( $config ) { return Testimonials::render_widget( $config, $atts ); },
+				'fields'      => array(
+					'eyebrow'      => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => __( 'In Their Words', $td ) ),
+					'heading'      => array( 'type' => 'string', 'label' => __( 'Heading', $td ), 'default' => __( 'What People Are Saying', $td ) ),
+					'testimonials' => array(
+						'type'        => 'repeater',
+						'label'       => __( 'Quotes', $td ),
+						'title_field' => '{{{ source }}}',
+						'item_fields' => array(
+							'quote'  => array( 'type' => 'textarea', 'label' => __( 'Quote', $td ) ),
+							'source' => array( 'type' => 'string', 'label' => __( 'Source (guest name, or publication)', $td ) ),
+						),
+						// Deliberately generic (no wine region/varietal
+						// claim tied to any one theme's own fictional
+						// estate) — this default has to work as a
+						// starting point on all 5 themes, unlike the
+						// homepage's own hardcoded per-theme copy.
+						'default' => array(
+							array( 'quote' => __( 'A beautifully structured wine with real aging potential.', $td ), 'source' => __( 'Wine Spectator', $td ) ),
+							array( 'quote' => __( 'The most memorable tasting we\'ve had all year — unhurried, personal, and the wine backs it up.', $td ), 'source' => __( 'Guest review', $td ) ),
+						),
+					),
+				),
+			),
+			'social-feed' => array(
+				'title'       => __( 'Social Feed', $td ),
+				'description' => __( 'An Instagram-style photo grid, each tile linking out (defaults to your configured Instagram URL under Setup if a row leaves its own link blank). Renders nothing at all until at least one row has a photo.', $td ),
+				'icon'        => 'grid-view',
+				'render'      => function ( $atts ) use ( $config ) { return SocialFeed::render_widget( $config, $atts ); },
+				'fields'      => array(
+					'eyebrow' => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => __( 'Follow Along', $td ) ),
+					'heading' => array( 'type' => 'string', 'label' => __( 'Heading', $td ), 'default' => __( 'From the Estate', $td ) ),
+					'photos'  => array(
+						'type'        => 'repeater',
+						'label'       => __( 'Photos', $td ),
+						'item_fields' => array(
+							'image' => array( 'type' => 'image', 'label' => __( 'Photo', $td ) ),
+							'link'  => array( 'type' => 'string', 'label' => __( 'Link (optional — defaults to your Instagram URL)', $td ) ),
+						),
+						// No safe generic default here (unlike Testimonials'
+						// quotes/PressLogos' publication names) — every
+						// original theme's own starter photos are its own
+						// bundled theme assets, which core has no path to
+						// reference. Empty until a buyer adds real photos.
+						'default' => array(),
+					),
+				),
+			),
+			'press-logos' => array(
+				'title'       => __( 'As Seen In', $td ),
+				'description' => __( 'A seamless auto-scrolling press-logo strip — add each publication\'s name, logo, and an optional link. A row with no logo image shows an honest labeled placeholder instead of a fabricated one. Renders nothing at all until at least one row has a name.', $td ),
+				'icon'        => 'align-center',
+				'render'      => function ( $atts ) use ( $config ) { return PressLogos::render_widget( $config, $atts ); },
+				'fields'      => array(
+					'eyebrow' => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => __( 'As Seen In', $td ) ),
+					'heading' => array( 'type' => 'string', 'label' => __( 'Heading', $td ), 'default' => __( 'Recognized by the Press We Respect', $td ) ),
+					'logos'   => array(
+						'type'        => 'repeater',
+						'label'       => __( 'Logos', $td ),
+						'title_field' => '{{{ name }}}',
+						'item_fields' => array(
+							'name'  => array( 'type' => 'string', 'label' => __( 'Publication name (alt text)', $td ) ),
+							'image' => array( 'type' => 'image', 'label' => __( 'Logo image (optional)', $td ) ),
+							'link'  => array( 'type' => 'string', 'label' => __( 'Link (optional)', $td ) ),
+						),
+						'default' => PressLogos::default_logos(),
+					),
+				),
+			),
+			'upcoming-events' => array(
+				'title'       => __( 'Upcoming Events', $td ),
+				'description' => __( 'The next few upcoming events (soonest-first), each linking to its own event page — pulls from the real Events post type, so it stays in sync with whatever you publish there. Renders nothing at all when there are no upcoming events.', $td ),
+				'icon'        => 'calendar-alt',
+				'render'      => function ( $atts ) use ( $config ) { return Events::render_upcoming_widget( $config, $atts ); },
+				'fields'      => array(
+					'eyebrow'       => array( 'type' => 'string', 'label' => __( 'Eyebrow', $td ), 'default' => __( 'Join Us', $td ) ),
+					'heading'       => array( 'type' => 'string', 'label' => __( 'Heading', $td ), 'default' => __( 'Upcoming Events', $td ) ),
+					'limit'         => array( 'type' => 'number', 'label' => __( 'Number of events to show', $td ), 'default' => 3 ),
+					'details_label' => array( 'type' => 'string', 'label' => __( '"Details" button text', $td ), 'default' => __( 'Details & RSVP', $td ) ),
+					'see_all_label' => array( 'type' => 'string', 'label' => __( '"See all" button text', $td ), 'default' => __( 'See All Events', $td ) ),
+					'see_all_url'   => array( 'type' => 'string', 'label' => __( '"See all" link (optional — defaults to /events)', $td ), 'default' => '' ),
+				),
+			),
+			'membership-tiers' => array(
+				'title'       => __( 'Commerce7 — Membership Tiers', $td ),
+				'description' => __( 'Wine club tier cards you write yourself (name, price, description) — each card gets its own real "Join the Club" button, independently wired to its own Commerce7 club plan slug (leave a row\'s slug blank to use the default club plan from Setup).', $td ),
+				'icon'        => 'awards',
+				'render'      => function ( $atts ) use ( $config ) { return Integration::render_membership_tiers( $config, $atts ); },
+				'fields'      => array(
+					'tiers' => array(
+						'type'        => 'repeater',
+						'label'       => __( 'Tiers', $td ),
+						'title_field' => '{{{ name }}}',
+						'item_fields' => array(
+							'name'        => array( 'type' => 'string', 'label' => __( 'Tier name', $td ) ),
+							'price'       => array( 'type' => 'string', 'label' => __( 'Price', $td ) ),
+							'description' => array( 'type' => 'textarea', 'label' => __( 'Description', $td ) ),
+							'slug'        => array( 'type' => 'string', 'label' => __( 'Commerce7 club slug (optional — leave blank for the default club plan from Setup)', $td ) ),
+						),
+						/* translators: same three starter tiers every original theme shipped in ContentSettings\Framework's club_tiers default, kept identical here so a buyer sees familiar copy regardless of which builder (Elementor or the classic page route) they're looking at. */
+						'default' => array(
+							array( 'name' => __( 'The Explorer', $td ), 'price' => __( '$95 / quarter', $td ), 'description' => __( '4 bottles, mostly current releases — the easy way to always have the estate on hand.', $td ), 'slug' => '' ),
+							array( 'name' => __( 'The Connoisseur', $td ), 'price' => __( '$180 / quarter', $td ), 'description' => __( '8 bottles, including early access to limited releases before they\'re offered to the public.', $td ), 'slug' => '' ),
+							array( 'name' => __( 'The Reserve', $td ), 'price' => __( '$320 / quarter', $td ), 'description' => __( '12 bottles, first access to library and single-vineyard wines, plus two complimentary tastings a year.', $td ), 'slug' => '' ),
+						),
+					),
+				),
+			),
 			'wines-catalog' => array(
 				'title'       => __( 'Commerce7 — Wines Catalog (Filter & Sort)', $td ),
 				'description' => __( 'The full available wine list with filter-by-type, filter-by-varietal, and sort-by-price/vintage controls — real add-to-cart on each card. Needs the optional App ID/Secret Key under Setup.', $td ),
@@ -182,7 +324,7 @@ class Blocks {
 				$attributes = array();
 				foreach ( $def['fields'] as $key => $field ) {
 					$attributes[ $key ] = array(
-						'type'    => $field['type'] === 'number' ? 'number' : 'string',
+						'type'    => self::block_attribute_type( $field['type'] ),
 						'default' => $field['default'],
 					);
 				}
@@ -238,7 +380,7 @@ class Blocks {
 		add_filter( 'block_categories_all', function ( $categories ) use ( $config ) {
 			array_unshift( $categories, array(
 				'slug'  => self::category_slug( $config ),
-				'title' => sprintf( __( '%s — Commerce7', $config->text_domain() ), $config->brand_name() ),
+				'title' => sprintf( __( '%s — Widgets', $config->text_domain() ), $config->brand_name() ),
 				'icon'  => 'store',
 			) );
 			return $categories;
@@ -247,5 +389,26 @@ class Blocks {
 
 	public static function category_slug( Config $config ): string {
 		return $config->slug() . '-commerce7';
+	}
+
+	/**
+	 * A 'repeater' field's value is an array of associative arrays (see
+	 * ElementorWidget::add_repeater_control()) — registering it as WP's
+	 * 'string' attribute type would fail block-validation the moment
+	 * Elementor's own repeater default (an array) got compared against a
+	 * string schema. Gutenberg's own editor UI has no control for this
+	 * type yet (blocks-editor.js skips it and always renders the PHP-side
+	 * default), but the schema still has to be correct so the dynamic
+	 * block itself registers and previews without erroring.
+	 */
+	private static function block_attribute_type( string $field_type ): string {
+		if ( $field_type === 'number' ) return 'number';
+		if ( $field_type === 'repeater' ) return 'array';
+		// 'image' stays a plain string (a URL) here — Gutenberg has no
+		// media-picker inspector control for it yet either (blocks-
+		// editor.js defers it the same way it defers 'repeater'), and the
+		// PHP-side default is already a URL string, not the {url,id}
+		// shape Elementor's own MEDIA control saves.
+		return 'string';
 	}
 }

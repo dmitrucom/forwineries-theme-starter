@@ -146,6 +146,38 @@ class Config {
 		return (string) $this->get( 'brand_name', '' );
 	}
 
+	/**
+	 * A photo to fall back on for any full-bleed CTA band whose own image
+	 * is unset — the shared .fw-hero--band shell paints a dark scrim over
+	 * whatever background it has, so a band with no photo doesn't degrade
+	 * to "a plain colored band", it degrades to "a photo that failed to
+	 * load", which is what the Albariza/Heronrest homepage bands were
+	 * reported as (2026-09-10). Rather than let every band render callback
+	 * decide that independently (and quietly forget to), they all resolve
+	 * through here.
+	 *
+	 * Walks the per-route hero images every theme already configures, most
+	 * specific first, and returns '' only when the theme genuinely ships no
+	 * photo at all — at which point the caller must drop the band's ph-img
+	 * class too, so it falls back to the .ph-* gradient placeholder rather
+	 * than to bare color.
+	 */
+	public function band_image( string ...$preferred_paths ): string {
+		$candidates = array_merge( $preferred_paths, array(
+			'pages.c7_content.reservation.image',
+			'pages.visit.image',
+			'pages.estate.hero',
+			'pages.c7_content.club.image',
+			'pages.c7_content.wines.image',
+			'age_gate.bg_image',
+		) );
+		foreach ( $candidates as $path ) {
+			$value = trim( (string) $this->get( $path, '' ) );
+			if ( $value !== '' ) return $value;
+		}
+		return '';
+	}
+
 	public function raw(): array {
 		return $this->data;
 	}

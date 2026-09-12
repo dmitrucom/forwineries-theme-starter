@@ -1,0 +1,85 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * Card styling for Events::render_upcoming_widget() ONLY — the real
+ * /events archive (archive-{post_type}.php) and its own {prefix}-blog-
+ * card/{prefix}-event-card classes stay exactly as they are, per-theme,
+ * per Events.php's own docblock ("genuinely per-theme, brand voice/
+ * layout"). This file exists so the Elementor/Gutenberg widget has an
+ * equally polished, independent implementation to render into, without
+ * touching (or risking a regression on) any already-shipped archive
+ * page. Same visual design as the 4 themes whose card CSS already
+ * agreed byte-for-byte (Fault Line/Vespera/Albariza/Heronrest) —
+ * Larkhaven's own archive predates that design and lacked the hover-
+ * zoom, but the widget gets the fuller version regardless of which
+ * theme it's placed on, same as every other shared core component.
+ *
+ * Written entirely against unprefixed var(--fw-*) tokens, including the
+ * --fw-clay-rgb companion (DesignTokens::css()) for the translucent
+ * hover border — see docs/LESSONS.md's "Fault Line's own accent color
+ * leaked into 3 sibling themes' hover effects" for exactly why this
+ * must never be a hardcoded rgba(R, G, B, ...) literal.
+ */
+.fw-upcoming-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--fw-space-md);
+}
+.fw-upcoming-event-card {
+  background: var(--fw-cream);
+  border: 1px solid var(--fw-line);
+  border-radius: var(--fw-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s var(--fw-ease), box-shadow 0.4s var(--fw-ease), border-color 0.25s ease;
+}
+.fw-upcoming-event-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--fw-shadow-lg);
+  border-color: rgba(var(--fw-clay-rgb), 0.45);
+}
+.fw-upcoming-event-media { display: block; overflow: hidden; position: relative; }
+.fw-upcoming-event-media img {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  transition: transform 0.6s var(--fw-ease);
+}
+/* Image zooms gently inside its clipped frame while the card lifts —
+   the two motions together are what make the hover feel dimensional. */
+.fw-upcoming-event-card:hover .fw-upcoming-event-media img { transform: scale(1.06); }
+@media (prefers-reduced-motion: reduce) {
+  .fw-upcoming-event-card, .fw-upcoming-event-media img { transition: none; }
+  .fw-upcoming-event-card:hover { transform: none; }
+  .fw-upcoming-event-card:hover .fw-upcoming-event-media img { transform: none; }
+}
+.fw-upcoming-event-media .ph-img { min-height: 220px; }
+.fw-upcoming-event-date-badge {
+  position: absolute;
+  top: var(--fw-space-xs);
+  left: var(--fw-space-xs);
+  background: var(--fw-clay);
+  color: var(--fw-cream);
+  font-family: var(--fw-font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  border-radius: var(--fw-radius-sm);
+}
+.fw-upcoming-event-body { padding: var(--fw-space-md) var(--fw-space-sm) var(--fw-space-md); }
+.fw-upcoming-event-meta {
+  display: block;
+  color: var(--fw-clay);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--fw-space-xs);
+}
+.fw-upcoming-event-card h3 { font-size: 1.4rem; margin-bottom: var(--fw-space-xs); }
+.fw-upcoming-event-card h3 a { color: inherit; text-decoration: none; }
+.fw-upcoming-event-card h3 a:hover { color: var(--fw-clay); }

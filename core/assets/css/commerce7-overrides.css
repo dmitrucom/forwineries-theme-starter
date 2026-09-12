@@ -130,8 +130,35 @@
 .fw-wine-slider { position: relative; display: flex; align-items: center; gap: var(--fw-space-sm); }
 .fw-wine-slider-track {
   display: flex;
+  /* Centers a short row (4 or fewer related wines, common on a small
+     catalog) instead of it hugging the left edge — most visible on
+     mobile where a single peeking card sat flush-left with empty space
+     to its right. Plain `center` alone is NOT safe here: confirmed live
+     via CDP that once there ARE enough wines to overflow the track,
+     unsafe centering shifts the whole flex line so its MIDDLE aligns to
+     the track's middle, which pushes item 1 to a negative x position
+     (measured: -725px, i.e. off-screen and unreachable at the default
+     scrollLeft:0) instead of leaving it at the scroll start where a
+     slider needs it. `safe center` is exactly the fallback this needs:
+     centers only when there's actual free space to center into (the
+     short-row case), and drops back to start-aligned the instant
+     content overflows (the normal, already-fine slider case). The
+     plain `center` above it is a harmless fallback for the handful of
+     browsers that don't understand the `safe` keyword yet — worse in
+     the overflow case there, unchanged from before this fix existed. */
+  justify-content: center;
+  justify-content: safe center;
   gap: var(--fw-space-md);
   overflow-x: auto;
+  /* Setting only overflow-x leaves overflow-y at its default per the
+     CSS Overflow spec's own "propagation" rule for a non-visible pair:
+     the other axis computes to auto too, not visible — so the track
+     was quietly scrollable a few px vertically as well (visible as
+     odd vertical rubber-banding while swiping through wines on
+     mobile), even though nothing in it needs to scroll vertically at
+     all. Explicit overflow-y: hidden is what actually restricts this
+     to one axis. */
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -194,10 +221,20 @@
   .fw-wine-slider-item { flex-basis: calc(50% - var(--fw-space-md) / 2); }
 }
 @media (max-width: 560px) {
-  /* Peeks the next card at the edge — a deliberate carousel cue that
-     there's more to scroll to, rather than a single full-width card
-     that reads as the only one. */
-  .fw-wine-slider-item { flex-basis: 82%; }
+  /* Was flex-basis: 82%, to peek the next card at the edge as a cue
+     there's more to scroll to. Confirmed live (screenshot + measured
+     DOM geometry together, not just the CSS) that this is what was
+     actually behind repeated "product isn't centered" reports: an
+     82%-wide card that starts flush against the previous/next arrow
+     necessarily sits left of the arrow-to-arrow midpoint, because
+     there's nothing occupying the remaining 18% on its near side to
+     balance the peek on its far side — a real asymmetry, not a
+     rendering bug, and not fixable by centering the flex line (that
+     part was already correct). Full width removes the asymmetry
+     outright: one card fills the whole row, so there's no "beside it"
+     for it to be off-center relative to. Trades away the peek cue;
+     the arrows and scroll-snap still make "there's more" discoverable. */
+  .fw-wine-slider-item { flex-basis: 100%; }
   .fw-wine-slider-arrow { width: 36px; height: 36px; }
 }
 
@@ -216,7 +253,14 @@
   gap: var(--fw-space-md);
   margin-bottom: var(--fw-space-lg);
   padding-bottom: var(--fw-space-md);
-  border-bottom: 1px solid rgba(43, 36, 32, 0.12);
+  /* var(--fw-charcoal-rgb) (DesignTokens' RGB companion to each theme's
+     own text token), not a hardcoded rgba(43, 36, 32, ...) literal — that
+     literal was tuned as a dark line against the 4 light themes' pale
+     fields and went near-invisible on Vespera, where --fw-charcoal is
+     light, not dark (see the --c7-field-border-color comment in
+     Commerce7/Integration.php for the full story — same bug, same fix,
+     repeated at each of this file's own literal borders). */
+  border-bottom: 1px solid rgba(var(--fw-charcoal-rgb), 0.16);
 }
 .fw-catalog-filter { display: flex; flex-wrap: nowrap; gap: 8px; flex: 0 0 auto; }
 .fw-catalog-controls-right { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--fw-space-sm); flex: 0 0 auto; margin-left: auto; }
@@ -227,7 +271,7 @@
 .fw-catalog-select,
 .fw-catalog-search {
   background: transparent;
-  border: 1px solid rgba(43, 36, 32, 0.2) !important;
+  border: 1px solid rgba(var(--fw-charcoal-rgb), 0.32) !important;
   border-radius: 999px !important;
   padding: 8px 18px !important;
   font-family: var(--fw-font-body);
@@ -337,7 +381,7 @@
 }
 .fw-club-tier-card {
   background: var(--fw-cream);
-  border: 1px solid rgba(43, 36, 32, 0.1);
+  border: 1px solid rgba(var(--fw-charcoal-rgb), 0.14);
   border-top: 2px solid var(--fw-olive);
   padding: var(--fw-space-lg) var(--fw-space-md);
   text-align: center;
@@ -410,14 +454,26 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
   padding: var(--fw-space-lg) var(--fw-space-md);
 }
 @media (max-width: 600px) {
-  .fw-checkout-wrap { padding: var(--fw-space-md) var(--fw-space-sm); }
+  /* Was var(--fw-space-sm) alone (16px) — the same side gutter
+     .fw-container uses sitewide at this width, but reported as still
+     too tight specifically here: checkout's own content (a 4-step
+     row, an order-summary line with a price flush to the far edge,
+     dense form labels) reads denser than a normal marketing section at
+     the same 16px, so it felt more cramped even though the value
+     matched the rest of the site. Composed from two tokens rather than
+     jumping straight to --fw-space-md (32px, double), which read as
+     too much once tried against the same content. */
+  .fw-checkout-wrap { padding: var(--fw-space-md) calc(var(--fw-space-sm) + var(--fw-space-xs)); }
 }
 @media (max-width: 380px) {
-  /* Extra-narrow phones — Commerce7's own checkout layout already
-     handles this width well internally, it just needs every spare
-     pixel of width we can hand it rather than our own wrapper padding
-     eating into it. */
-  .fw-checkout-wrap { padding: var(--fw-space-md) 10px; }
+  /* Extra-narrow phones — Commerce7's own checkout layout still needs
+     more of the available width than wider phones do, so this stays
+     tighter than the tier above rather than matching it. Restored to
+     the sitewide --fw-space-sm baseline (16px) instead of the flat
+     10px it used before: 10px was tighter than anywhere else on the
+     site, which is what made checkout specifically feel cramped on
+     these widths too. */
+  .fw-checkout-wrap { padding: var(--fw-space-md) var(--fw-space-sm); }
 }
 
 /* =========================================================
@@ -466,9 +522,35 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
   margin-left: auto;
   margin-right: auto;
   background: var(--fw-cream-raised);
-  border: 1px solid rgba(43, 36, 32, 0.08);
-  box-shadow: 0 8px 24px rgba(43, 36, 32, 0.12);
+  border: 1px solid rgba(var(--fw-charcoal-rgb), 0.12);
+  box-shadow: 0 8px 24px rgba(var(--fw-charcoal-rgb), 0.16);
   padding: var(--fw-space-md);
+}
+
+/**
+ * Commerce7 styles the reservation widget's own Date/Time/No of Guests
+ * fields from --c7-field-bg (correctly --fw-cream on every theme) but
+ * never sets `color` on the <input>/<select> itself — same gap already
+ * found and fixed for the product add-to-cart quantity field (see that
+ * theme's own style.css: "Chrome's UA stylesheet then paints fieldtext —
+ * black — so the number vanishes"). Invisible there on the 4 light
+ * themes (black-on-pale-field still reads fine by accident) but on
+ * Vespera's dark field background it's black-on-near-black: the Date
+ * placeholder and Guests count render, they're just unreadable. Fixed
+ * once here, in shared core, rather than re-discovering it per theme —
+ * every theme's own add-to-cart-field fix stays theme-local since only
+ * Vespera also needs `color-scheme: dark` alongside it for the native
+ * calendar icon / dropdown chrome to redraw light-on-dark to match.
+ */
+.fw-reservation-widget-embed input,
+.fw-reservation-widget-embed select {
+  color: var(--fw-charcoal) !important;
+  -webkit-text-fill-color: var(--fw-charcoal) !important;
+  background-color: var(--fw-cream) !important;
+}
+.fw-reservation-widget-embed ::placeholder {
+  color: var(--fw-charcoal-soft) !important;
+  opacity: 1;
 }
 
 /* The live reservation-availability widget mounted inline in a homepage
@@ -477,6 +559,58 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
    clipped dropdown renders a correct internal grid but with everything
    past the first row invisible. */
 .fw-hero.fw-hero--band { overflow: visible; }
+
+/**
+ * The date-picker dropdown's own day numbers, "today" ring, and nav
+ * arrows are Commerce7's factory colors (e.g. a plain blue,
+ * rgb(50,81,174) for a day number) — calibrated against commerce7.css's
+ * own white factory background, and not exposed through any of the
+ * --c7-* brand variables above, so none of it can be retinted from
+ * there. Its own background here is transparent by default, so it just
+ * inherits whatever's behind it — the reservation embed's --fw-cream
+ * card. White-adjacent on 4 of the 5 themes, so Commerce7's blue day
+ * numbers read fine by accident; near-black on Vespera's dark palette,
+ * where the same blue on the same near-black is nearly invisible
+ * (confirmed live: rgb(50,81,174) text, transparent background, over a
+ * #131016 card). Overriding every individual state this calendar
+ * defines internally (default/today/selected/disabled/hover — none
+ * documented) isn't really available to us; forcing the popover itself
+ * back to the plain white background Commerce7 actually designed it
+ * against fixes all of those states at once, on every theme, and is
+ * also just normal date-picker UX — nothing else on the page themes a
+ * floating calendar to match a dark background either.
+ *
+ * !important: confirmed live (Vespera) that a plain, non-!important
+ * version of this rule has no effect at all — Commerce7 mounts this
+ * dropdown client-side and appears to inject its own stylesheet into
+ * <head> at that point, landing after this file's <link> in source
+ * order regardless of our own enqueue dependency on the "commerce7"
+ * handle (which only orders the two initial <link> tags in the
+ * server-rendered HTML, not whatever Commerce7's JS adds later). Same
+ * root cause as the *inline* style attribute problem the mobile fix
+ * below already works around with !important — different mechanism,
+ * same fix.
+ *
+ * Two layers, not one: react-day-picker renders its own wrapper
+ * (.rdp-root) as the dropdown's only direct child, and THAT element —
+ * not .c7-date-picker-dropdown itself — is what actually paints the
+ * visible fill; confirmed live it carries its own opaque background
+ * (rgb(19,16,22) on Vespera, i.e. --fw-cream again, most likely via the
+ * --c7-bg/--c7-block-bg bridge above) that fully covers the outer
+ * element regardless of what background that outer element resolves
+ * to. Whiting out only .c7-date-picker-dropdown left this inner layer
+ * dark and the day numbers just as unreadable as before. Both need the
+ * override; kept as one shared declaration rather than duplicating the
+ * value, since they're always meant to match.
+ */
+.c7-date-picker-dropdown,
+.c7-date-picker-dropdown .rdp-root {
+  background: #fff !important;
+}
+.c7-date-picker-dropdown {
+  border-radius: var(--fw-radius) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25) !important;
+}
 
 /**
  * THE CALENDAR-DROPDOWN MOBILE FIX. This is the bug this entire shared-
@@ -535,5 +669,103 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
   .c7-date-picker-dropdown .rdp-day,
   .c7-date-picker-dropdown .rdp-weekday {
     padding: 2px !important;
+  }
+}
+
+/**
+ * PRODUCT PAGE "KEY FEATURES" BAND — two separate mobile bugs in
+ * Commerce7's own PDP CSS (both confirmed live on Larkhaven's
+ * 2015 Reserve Pinot Noir, a product with no additional images —
+ * reported as "too much space instead of images" and "Farming Practice
+ * going off canvas," though neither bug is actually about the product's
+ * photos; a product WITH more images has the exact same underlying CSS
+ * and would show it too, just less obviously on a taller page):
+ *
+ * 1. .pdp-key-features carries `margin-top: -150px` and
+ *    `padding: calc(var(--pdp-space-xl) + 80px) 0 var(--pdp-space-xl)`
+ *    — reasonable proportions on a wide desktop layout (confirmed via
+ *    screenshot: a normal, well-spaced band there), but that's ~300px
+ *    of fixed vertical spacing with no mobile override at all, which
+ *    reads as a large dead cream-colored gap above the feature icons
+ *    on a ~700-900px-tall phone screen.
+ *
+ * 2. .pdp-features (the flex row of up to 4 feature columns) never
+ *    sets flex-wrap, so it defaults to nowrap — and Commerce7's OWN
+ *    responsive rules for the child .pdp-feature elements
+ *    (flex-basis: 45% under 900px, 100% under 600px, clearly written
+ *    to make them wrap into 2 columns then 1) never fire, because
+ *    flex-basis percentages don't force a new line without
+ *    flex-wrap: wrap on the parent. The 4 columns stay on one row,
+ *    each keeping its natural content width, and the row overflows the
+ *    viewport — confirmed live: 521px of combined column width in a
+ *    294px-wide container, with the last column ("Farming Practice" on
+ *    this product) pushed off-canvas. Adding the one missing
+ *    declaration is enough to make Commerce7's own existing breakpoint
+ *    rules finally take effect as originally authored — not
+ *    reimplementing their responsive design, just turning it on.
+ */
+@media screen and (max-width: 900px) {
+  .pdp-key-features {
+    margin-top: 0 !important;
+    padding: var(--fw-space-lg) 0 !important;
+  }
+  .pdp-features {
+    flex-wrap: wrap !important;
+  }
+}
+
+/**
+ * PRODUCT PAGE "ADDITIONAL IMAGES" GALLERY — the actual source of the
+ * dead space reported for products with no gallery photos beyond the
+ * main bottle shot (2015 Reserve Pinot Noir on Larkhaven; confirmed the
+ * same on 6 of 7 other Larkhaven wines sampled — this is the common
+ * case, not an edge case). Commerce7 always renders three fixed-size
+ * slots after the product info block:
+ *
+ *   <div class="pdp-wine-images">
+ *     <div class="pdp-image-narrow">...</div>
+ *     <div class="pdp-image-wide">...</div>
+ *     <div class="pdp-image-narrow">...</div>
+ *   </div>
+ *
+ * A slot with a real photo gets a nested <picture>/<img>; one with no
+ * photo configured is left as a genuinely empty, childless <div></div>.
+ * :empty is exactly the right tool here — it matches a childless slot
+ * precisely and never a real one (a populated slot's <picture> is a
+ * real child element, so :empty correctly never matches it), without
+ * needing to know anything about this product's data.
+ */
+.pdp-image-narrow:empty,
+.pdp-image-wide:empty {
+  display: none !important;
+}
+
+/**
+ * A second, separate bug in the same gallery, this one a real content
+ * loss rather than dead space: Commerce7's own CSS carries
+ *
+ *   @media screen and (max-width: 600px) {
+ *     .pdp-image-narrow:last-of-type { display: none; }
+ *   }
+ *
+ * — unconditional, regardless of whether that third slot actually has
+ * a photo. Confirmed live on 2015 Chardonnay (the one product in the
+ * original sample with real gallery photos, all three slots populated
+ * with three distinct images): on any phone ≤600px wide, the third
+ * photo is simply discarded — 3 images shown (hero + 2) instead of 4,
+ * every time, on every product that has one, regardless of the actual
+ * :empty fix above. This isn't a mobile simplification worth keeping;
+ * it silently drops real content a winery specifically uploaded. Undo
+ * it, but only when that slot actually has a photo — an empty one
+ * should obviously stay hidden, which is exactly what :not(:empty)
+ * guarantees, and why this can't just delete Commerce7's rule outright
+ * (we don't control their stylesheet to remove a rule, only add one
+ * that wins — see the .c7-date-picker-dropdown fix above for the same
+ * "compete with an injected stylesheet" situation and why !important
+ * is needed again here).
+ */
+@media screen and (max-width: 600px) {
+  .pdp-image-narrow:last-of-type:not(:empty) {
+    display: block !important;
   }
 }

@@ -1,0 +1,114 @@
+/**
+ * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
+ * Edit the source there and re-run tools/sync-core.sh.
+ *
+ * "As Seen In" seamless logo marquee, for PressLogos::render_widget()
+ * ONLY — independent of any theme's own {prefix}-press-strip classes
+ * used by the homepage's built-in section (same reasoning as
+ * upcoming-events.css: the widget gets its own core-owned copy rather
+ * than touching an already-shipped page's markup/CSS). Visual design
+ * matches the 4 themes whose press-strip CSS already agreed byte-for-
+ * byte (Fault Line/Albariza/Heronrest exactly; Vespera equivalently,
+ * modulo its own dark-theme placeholder border color).
+ *
+ * Continuous sliding "masthead" strip instead of wrapping to a second
+ * row once there are more publications than fit one line —
+ * PressLogos::render_widget() renders the item list twice (the second
+ * copy aria-hidden, tabindex="-1", visual-only) and this animates the
+ * combined row exactly -50% of its own width, which is precisely one
+ * full copy's width, so the moment the first copy has scrolled fully
+ * off, the (identical) second copy is sitting exactly where the first
+ * one started — the loop restarts with no visible seam. Fade mask
+ * softens the hard edges where logos enter/exit instead of an abrupt
+ * clip. Paused on hover/focus so a visitor can actually click a logo;
+ * disabled entirely under prefers-reduced-motion (vestibular-disorder
+ * safety, not just a nicety — continuous motion is exactly the kind of
+ * thing that spec exists for).
+ *
+ * Written entirely against unprefixed var(--fw-*) tokens — the
+ * placeholder border below deliberately uses var(--fw-line) (the
+ * token this exact "hairline divider" use case already exists for)
+ * rather than a hardcoded gray: the 3 themes' own copies of this
+ * component all hardcode a value that doesn't match ANY of their
+ * current tokens (likely a stale leftover predating a rebrand,
+ * distinct from the confirmed clay/cream leak bug — see LESSONS.md),
+ * so this rewrite sidesteps that ambiguity by using the correct
+ * semantic token from the start rather than propagating a value
+ * nobody can currently explain.
+ */
+.fw-press-section { text-align: center; padding-top: var(--fw-space-xl); padding-bottom: var(--fw-space-xl); }
+.fw-press-section .fw-eyebrow { display: inline-block; margin-bottom: var(--fw-space-xs); }
+.fw-press-heading { margin-bottom: var(--fw-space-lg); }
+.fw-press-strip-outer {
+  overflow: hidden;
+  max-width: 960px;
+  margin: 0 auto;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.fw-press-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--fw-space-lg);
+  width: max-content;
+  animation: fw-press-scroll 32s linear infinite;
+}
+.fw-press-strip-dup { display: contents; }
+.fw-press-strip-outer:hover .fw-press-strip,
+.fw-press-strip-outer:focus-within .fw-press-strip { animation-play-state: paused; }
+@keyframes fw-press-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fw-press-strip { animation: none; }
+}
+/* Descendant selectors, not direct-child (>) — the duplicated set for
+   the seamless loop sits inside .fw-press-strip-dup (display:contents),
+   which removes it from the BOX tree for layout but not the DOM tree,
+   so a > combinator here would silently miss every duplicated item. */
+.fw-press-strip a,
+.fw-press-strip .fw-press-logo-placeholder {
+  flex: 0 0 auto;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fw-press-strip img {
+  max-height: 38px;
+  width: auto;
+  margin: 0 auto;
+  filter: grayscale(100%);
+  opacity: 0.55;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+.fw-press-strip a:hover img,
+.fw-press-strip a:focus-visible img { filter: grayscale(0%); opacity: 1; }
+/* Real publication logos are trademarked, so an unset row shows this
+   labeled placeholder instead of a fabricated logo image — same
+   honesty-over-lorem-ipsum approach as every other ph-img placeholder.
+   Thin rules above/below (not a box outline all the way round) read as
+   a citation/masthead credit rather than an unfinished to-do item. */
+.fw-press-logo-placeholder {
+  width: auto !important;
+  min-height: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--fw-space-sm) var(--fw-space-xs);
+  border: none;
+  border-top: 1px solid var(--fw-line);
+  border-bottom: 1px solid var(--fw-line);
+  border-radius: 0;
+  background: none;
+}
+.fw-press-logo-placeholder .ph-tag {
+  position: static;
+  background: none;
+  color: var(--fw-charcoal-soft);
+  padding: 0;
+  font-family: var(--fw-font-accent, var(--fw-font-heading));
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}

@@ -19,7 +19,7 @@ class ElementorWidgets {
 	public static function register( Config $config ): void {
 		add_action( 'elementor/elements/categories_registered', function ( $elements_manager ) use ( $config ) {
 			$elements_manager->add_category( Blocks::category_slug( $config ), array(
-				'title' => sprintf( __( '%s — Commerce7', $config->text_domain() ), $config->brand_name() ),
+				'title' => sprintf( __( '%s — Widgets', $config->text_domain() ), $config->brand_name() ),
 				'icon'  => 'eicon-cart-medium',
 			) );
 		} );

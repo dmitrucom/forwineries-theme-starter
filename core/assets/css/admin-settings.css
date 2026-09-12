@@ -4,25 +4,247 @@
  *
  * Admin-only chrome for the unified settings page (SettingsPage) — tab
  * panel layout, collapsible field groups, search filter, sticky save
- * bar. Deliberately uses WordPress admin's own color language (#2271b1
- * link blue, standard admin grays) rather than any theme's brand
- * colors — this lives inside wp-admin chrome, not the public site, and
- * should look native to it rather than like a themed intrusion. Same
- * reasoning as core/assets/css/demo-bar.css using a neutral system font
- * stack instead of brand fonts.
+ * bar, and (2026-09-11) the page's whole visual language.
+ *
+ * Every color/font/radius/shadow/spacing value below is a var(--fw-*)
+ * token — the exact same :root block the public site renders from
+ * (DesignTokens::css()), bridged onto this one admin page by
+ * SettingsPage::register()'s admin_enqueue_scripts callback. That's a
+ * deliberate reversal of this file's original "look native to wp-admin,
+ * not like a themed intrusion" stance: a client buying a $349-$599/year
+ * premium theme reads a plain-gray, WP-blue settings screen as an
+ * unfinished afterthought bolted onto the product, not as tasteful
+ * restraint — so this now reads as the SAME product as the site it
+ * configures. wp-admin's own chrome (menu, toolbar, notices) is left
+ * alone on purpose: only the content this page itself owns is restyled,
+ * every rule stays scoped under .fw-settings-page, and no wp-admin base
+ * selector (.wrap, .form-table, .button) is touched outside that scope
+ * — this still can't bleed onto any other admin screen.
+ *
+ * Body copy, labels, and descriptions deliberately stay on wp-admin's
+ * native system font — only headings switch to var(--fw-font-heading).
+ * A settings screen is a working tool a client returns to often; a full
+ * serif skin over every label would cost legibility and scanning speed
+ * for a decorative win nobody asked for. Same restraint the public
+ * site's own type scale already uses (display serif headings, sans
+ * body) — see docs/DESIGN-TOKEN-SCHEMA.md.
  *
  * Enqueued only on the settings page itself
  * (SettingsPage::register()'s admin_enqueue_scripts check).
  */
 
+.fw-settings-page {
+	--fw-settings-radius: var(--fw-radius, 10px);
+	--fw-settings-radius-sm: var(--fw-radius-sm, 6px);
+	--fw-settings-ring: 0 0 0 3px rgba(var(--fw-clay-rgb, 125, 32, 53), 0.16);
+	color: var(--fw-charcoal, #2c2420);
+}
+
+/* ---------- Page header ---------- */
+
+.fw-settings-header {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin: 4px 0 20px;
+	padding-bottom: 18px;
+	border-bottom: 1px solid var(--fw-line, #e3ddd3);
+}
+.fw-settings-page h1 {
+	margin: 0;
+	font-family: var(--fw-font-heading, Georgia, serif);
+	font-weight: 600;
+	font-size: 1.9rem;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	color: var(--fw-ink, var(--fw-charcoal, #2c2420));
+}
+.fw-settings-kicker {
+	margin: 0 0 3px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--fw-clay, #7d2035);
+}
+
+/* ---------- Tabs ---------- */
+
+#fw-settings-tabs.nav-tab-wrapper {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	margin: 0 0 28px;
+	padding: 0;
+	border-bottom: 1px solid var(--fw-line, #e3ddd3);
+	line-height: normal;
+}
+.fw-settings-page .nav-tab {
+	margin: 0;
+	padding: 11px 18px;
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--fw-charcoal-soft, #6b5f57);
+	transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.fw-settings-page .nav-tab:hover {
+	background: var(--fw-cream-raised, rgba(0, 0, 0, 0.03));
+	color: var(--fw-charcoal, #2c2420);
+}
+.fw-settings-page .nav-tab:focus-visible {
+	outline: 2px solid var(--fw-clay, #7d2035);
+	outline-offset: -2px;
+}
+.fw-settings-page .nav-tab-active,
+.fw-settings-page .nav-tab-active:hover {
+	background: transparent;
+	border-bottom-color: var(--fw-clay, #7d2035);
+	color: var(--fw-ink, var(--fw-charcoal, #2c2420));
+	font-weight: 600;
+}
+
+/* ---------- Section headings shared by every tab ---------- */
+
+.fw-settings-tab-panel h2 {
+	margin: 32px 0 6px;
+	padding-left: 14px;
+	border-left: 3px solid var(--fw-clay, #7d2035);
+	border-bottom: 0;
+	font-family: var(--fw-font-heading, Georgia, serif);
+	font-weight: 600;
+	font-size: 1.2rem;
+	color: var(--fw-ink, var(--fw-charcoal, #2c2420));
+}
+.fw-settings-tab-panel form > h2:first-child,
+.fw-settings-category-heading:first-child {
+	margin-top: 0;
+}
+.fw-settings-tab-panel > p.description {
+	max-width: 64ch;
+	margin: 0 0 20px;
+	padding-left: 17px;
+	color: var(--fw-charcoal-soft, #6b5f57);
+}
+.fw-settings-tab-panel h3 {
+	font-family: var(--fw-font-heading, Georgia, serif);
+	font-weight: 600;
+	color: var(--fw-charcoal, #2c2420);
+}
+
+/* ---------- Form fields (every tab's form-table) ---------- */
+
+.fw-settings-tab-panel .form-table th {
+	padding: 16px 14px 16px 0;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--fw-charcoal, #2c2420);
+}
+.fw-settings-tab-panel .form-table td {
+	padding: 12px 0;
+}
+.fw-settings-tab-panel .description {
+	max-width: 60ch;
+	color: var(--fw-charcoal-soft, #6b5f57);
+	line-height: 1.6;
+}
+
+.fw-settings-page input[type="text"],
+.fw-settings-page input[type="url"],
+.fw-settings-page input[type="email"],
+.fw-settings-page input[type="tel"],
+.fw-settings-page input[type="number"],
+.fw-settings-page input[type="search"],
+.fw-settings-page textarea {
+	padding: 8px 12px;
+	border: 1px solid var(--fw-line, #ccc4b8);
+	border-radius: var(--fw-settings-radius-sm);
+	background: #fff;
+	color: var(--fw-charcoal, #2c2420);
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+/* select gets its own rule, not lumped into the block above — a plain
+   background:#fff there replaces wp-admin's default background, which
+   is a shorthand carrying its own chevron background-image. Without
+   that the dropdown silently loses its arrow and reads as a plain,
+   possibly-disabled text field (caught visually, not assumed). This
+   redraws that arrow deliberately, in a color that matches the new
+   palette instead of wp-admin's stock gray. */
+.fw-settings-page select {
+	padding: 8px 32px 8px 12px;
+	border: 1px solid var(--fw-line, #ccc4b8);
+	border-radius: var(--fw-settings-radius-sm);
+	background: #fff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20d%3D%22M5%207l5%205%205-5%22%20stroke%3D%22%236b5f57%22%20stroke-width%3D%221.6%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") no-repeat right 10px center;
+	background-size: 16px 16px;
+	appearance: none;
+	-webkit-appearance: none;
+	color: var(--fw-charcoal, #2c2420);
+	box-shadow: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.fw-settings-page input[type="text"]:focus,
+.fw-settings-page input[type="url"]:focus,
+.fw-settings-page input[type="email"]:focus,
+.fw-settings-page input[type="tel"]:focus,
+.fw-settings-page input[type="number"]:focus,
+.fw-settings-page input[type="search"]:focus,
+.fw-settings-page select:focus,
+.fw-settings-page textarea:focus {
+	border-color: var(--fw-clay, #7d2035);
+	box-shadow: var(--fw-settings-ring);
+	outline: none;
+}
+
+/* ---------- Buttons ---------- */
+
+.fw-settings-page .button-primary {
+	background: var(--fw-clay, #7d2035);
+	border-color: var(--fw-clay, #7d2035);
+	color: var(--fw-cream, #fff);
+	border-radius: var(--fw-settings-radius-sm);
+	font-weight: 600;
+	box-shadow: none;
+	text-shadow: none;
+}
+.fw-settings-page .button-primary:hover,
+.fw-settings-page .button-primary:focus {
+	background: var(--fw-clay-dark, #5c1425);
+	border-color: var(--fw-clay-dark, #5c1425);
+	color: var(--fw-cream, #fff);
+}
+.fw-settings-page .button:not(.button-primary) {
+	border-radius: var(--fw-settings-radius-sm);
+	border-color: var(--fw-line, #ccc4b8);
+	background: var(--fw-cream, #fff);
+	color: var(--fw-charcoal, #2c2420);
+	box-shadow: none;
+}
+.fw-settings-page .button:not(.button-primary):hover {
+	border-color: var(--fw-clay, #7d2035);
+	color: var(--fw-clay, #7d2035);
+	background: var(--fw-cream, #fff);
+}
+.fw-settings-page .button-link,
+.fw-settings-toc-actions .button-link {
+	color: var(--fw-clay, #7d2035);
+}
+.fw-settings-toc-actions .button-link + .button-link::before {
+	color: var(--fw-charcoal-soft, #999);
+}
+
+/* ---------- Sidebar ---------- */
+
 .fw-settings-layout {
 	display: flex;
 	gap: 32px;
 	align-items: flex-start;
-	margin-top: 16px;
+	margin-top: 4px;
 }
-
-/* ---------- Sidebar ---------- */
 
 .fw-settings-sidebar {
 	flex: 0 0 240px;
@@ -30,22 +252,26 @@
 	top: 46px; /* clears the WP admin toolbar */
 	max-height: calc(100vh - 60px);
 	overflow-y: auto;
-	padding-right: 8px;
+	padding: 16px;
+	border-radius: var(--fw-settings-radius);
+	background: var(--fw-cream-raised, #f7f5f0);
 }
 
 .fw-settings-filter {
 	width: 100%;
 	box-sizing: border-box;
-	padding: 6px 10px;
-	margin-bottom: 8px;
+	padding: 8px 12px;
+	margin-bottom: 10px;
+	border: 1px solid var(--fw-line, #ccc4b8);
+	border-radius: var(--fw-settings-radius-sm);
+	background: #fff;
 }
 
 .fw-settings-toc-actions {
-	margin: 0 0 12px;
+	margin: 0 0 14px;
 	font-size: 12px;
 }
 .fw-settings-toc-actions .button-link {
-	color: #2271b1;
 	text-decoration: none;
 }
 .fw-settings-toc-actions .button-link:hover { text-decoration: underline; }
@@ -53,16 +279,15 @@
 	content: "\00b7";
 	display: inline-block;
 	margin: 0 6px;
-	color: #a7aaad;
 }
 
 .fw-settings-toc-heading {
-	margin: 16px 0 4px;
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.06em;
+	margin: 18px 0 4px;
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.09em;
 	text-transform: uppercase;
-	color: #646970;
+	color: var(--fw-olive, #8a7a5a);
 }
 .fw-settings-toc-heading:first-child { margin-top: 0; }
 
@@ -70,70 +295,71 @@
 	margin: 0 0 8px;
 	padding: 0;
 	list-style: none;
-	border-left: 2px solid #dcdcde;
+	border-left: 2px solid var(--fw-line, #e3ddd3);
 }
 .fw-settings-toc li { margin: 0; }
 .fw-settings-toc a {
 	display: block;
-	padding: 4px 0 4px 12px;
+	padding: 5px 0 5px 12px;
 	margin-left: -2px;
 	border-left: 2px solid transparent;
 	font-size: 13px;
 	text-decoration: none;
-	color: #3c434a;
+	color: var(--fw-charcoal-soft, #6b5f57);
+	transition: color 0.15s ease, border-color 0.15s ease;
 }
 .fw-settings-toc a:hover {
-	color: #2271b1;
-	border-left-color: #2271b1;
+	color: var(--fw-clay, #7d2035);
+	border-left-color: var(--fw-clay, #7d2035);
 }
 
 /* ---------- Main content ---------- */
 
 .fw-settings-main { flex: 1; min-width: 0; }
 
-.fw-settings-category-heading {
-	margin: 28px 0 12px;
-	padding-bottom: 8px;
-	border-bottom: 1px solid #dcdcde;
-}
-.fw-settings-category-heading:first-child { margin-top: 0; }
-
 /* ---------- Collapsible groups ---------- */
 
 .fw-settings-group {
 	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
+	border: 1px solid var(--fw-line, #e3ddd3);
+	border-radius: var(--fw-settings-radius);
 	margin-bottom: 10px;
+	box-shadow: var(--fw-shadow-sm, none);
+	transition: border-color 0.15s ease;
 }
-.fw-settings-group[open] { border-color: #c3c4c7; }
+.fw-settings-group[open] { border-color: var(--fw-clay, #7d2035); }
 .fw-settings-group summary {
 	cursor: pointer;
-	padding: 12px 16px;
+	padding: 13px 18px;
 	font-size: 14px;
 	font-weight: 600;
+	color: var(--fw-charcoal, #2c2420);
 	list-style: none; /* remove default browser triangle, custom one below */
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	border-radius: var(--fw-settings-radius);
 }
 .fw-settings-group summary::-webkit-details-marker { display: none; }
 .fw-settings-group summary::after {
 	content: "\f140"; /* dashicons-arrow-down-alt2 */
 	font-family: dashicons;
 	font-size: 16px;
-	color: #646970;
+	color: var(--fw-olive, #8a7a5a);
 	transition: transform 0.15s ease;
 }
-.fw-settings-group[open] summary::after { transform: rotate(180deg); }
-.fw-settings-group summary:hover { background: #f6f7f7; }
+.fw-settings-group[open] summary::after {
+	transform: rotate(180deg);
+	color: var(--fw-clay, #7d2035);
+}
+.fw-settings-group summary:hover { background: var(--fw-cream-raised, #f7f5f0); }
 .fw-settings-group summary:focus-visible {
-	outline: 2px solid #2271b1;
+	outline: 2px solid var(--fw-clay, #7d2035);
 	outline-offset: -2px;
 }
 .fw-settings-group-body {
-	padding: 4px 16px 16px;
-	border-top: 1px solid #f0f0f1;
+	padding: 4px 18px 18px;
+	border-top: 1px solid var(--fw-line, #f0f0f1);
 }
 .fw-settings-group-body .form-table { margin-top: 0; }
 
@@ -145,8 +371,8 @@
 
 .fw-repeater-row {
 	position: relative;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
+	border: 1px solid var(--fw-line, #e3ddd3);
+	border-radius: var(--fw-settings-radius-sm);
 	background: #fff;
 	padding: 8px 16px 16px;
 	margin-bottom: 10px;
@@ -159,20 +385,20 @@
 	justify-content: space-between;
 	margin: 0 -16px 8px;
 	padding: 4px 12px 8px 16px;
-	border-bottom: 1px solid #f0f0f1;
+	border-bottom: 1px solid var(--fw-line, #f0f0f1);
 }
-.fw-repeater-row-grip { color: #c3c4c7; }
+.fw-repeater-row-grip { color: var(--fw-line, #c3c4c7); }
 .fw-repeater-row-toolbar-buttons {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 }
 .fw-repeater-row-toolbar-buttons .button-link {
-	color: #646970;
+	color: var(--fw-charcoal-soft, #6b5f57);
 	cursor: pointer;
 	padding: 2px;
 }
-.fw-repeater-row-toolbar-buttons .button-link:hover { color: #2271b1; }
+.fw-repeater-row-toolbar-buttons .button-link:hover { color: var(--fw-clay, #7d2035); }
 .fw-repeater-row-toolbar-buttons .button-link-delete {
 	cursor: pointer;
 	font-size: 12px;
@@ -210,8 +436,8 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
+	border: 1px solid var(--fw-line, #e3ddd3);
+	border-radius: var(--fw-settings-radius-sm);
 	/* Checkerboard so transparent logos (press strip PNGs) read correctly. */
 	background:
 		linear-gradient(45deg, #f0f0f1 25%, transparent 25%, transparent 75%, #f0f0f1 75%) 0 0 / 16px 16px,
@@ -223,7 +449,7 @@
 	object-fit: contain;
 }
 .fw-image-field-preview .dashicons {
-	color: #c3c4c7;
+	color: var(--fw-line, #c3c4c7);
 	font-size: 28px;
 	width: 28px;
 	height: 28px;
@@ -247,6 +473,37 @@
 	font-size: 12px;
 }
 
+/* ---------- Color picker ---------- */
+
+.fw-settings-page .wp-picker-container .wp-color-result {
+	border-radius: var(--fw-settings-radius-sm);
+	margin-bottom: 0;
+}
+.fw-settings-page .wp-picker-container .wp-picker-input-wrap input[type="text"] {
+	border-radius: var(--fw-settings-radius-sm);
+}
+
+/* ---------- Motion tab ---------- */
+
+.fw-motion-effects { max-width: 900px; margin-top: 8px; }
+.fw-motion-effects th,
+.fw-motion-effects td { vertical-align: top; }
+.fw-motion-effects td .description { margin: 2px 0 0; }
+.fw-motion-effects__on { width: 40px; text-align: center; }
+.fw-motion-effects__on label { display: inline-block; padding-top: 2px; }
+.fw-motion-effects__pace { width: 160px; }
+.fw-motion-effects__pace select { width: 100%; }
+
+.fw-motion-placements {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 8px 24px;
+	max-width: 900px;
+	margin: 8px 0 16px;
+}
+.fw-motion-placements__item label { display: inline-flex; gap: 6px; align-items: flex-start; }
+.fw-motion-placements__item input { margin-top: 2px; }
+
 /* ---------- Save bar ---------- */
 
 .fw-settings-save-bar {
@@ -256,17 +513,19 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	margin-top: 20px;
-	padding: 14px 16px;
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
-	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+	margin-top: 24px;
+	padding: 14px 18px;
+	background: rgba(var(--fw-cream-rgb, 255, 255, 255), 0.92);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid var(--fw-line, #e3ddd3);
+	border-radius: var(--fw-settings-radius);
+	box-shadow: var(--fw-shadow-md, 0 -2px 8px rgba(0, 0, 0, 0.06));
 }
 .fw-settings-save-bar .button-primary { margin: 0; }
 .fw-settings-save-bar-hint {
 	font-size: 12px;
-	color: #646970;
+	color: var(--fw-charcoal-soft, #6b5f57);
 }
 
 @media (max-width: 960px) {
@@ -276,6 +535,7 @@
 		max-height: none;
 		width: 100%;
 		flex: none;
+		box-sizing: border-box;
 	}
 	.fw-settings-toc { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 	.fw-settings-toc ul { display: flex; flex-wrap: wrap; gap: 0 12px; border-left: none; }

@@ -83,9 +83,21 @@ class ElementorWidget extends \Elementor\Widget_Base {
 				'label' => __( 'Content', $td ),
 			) );
 			foreach ( $this->fw_def['fields'] as $key => $field ) {
+				if ( $field['type'] === 'repeater' ) {
+					$this->add_repeater_control( $key, $field, $td );
+					continue;
+				}
+				if ( $field['type'] === 'image' ) {
+					$this->add_control( $key, array(
+						'label'   => $field['label'],
+						'type'    => \Elementor\Controls_Manager::MEDIA,
+						'default' => array( 'url' => isset( $field['default'] ) ? $field['default'] : '' ),
+					) );
+					continue;
+				}
 				$this->add_control( $key, array(
 					'label'   => $field['label'],
-					'type'    => $field['type'] === 'number' ? \Elementor\Controls_Manager::NUMBER : \Elementor\Controls_Manager::TEXT,
+					'type'    => $field['type'] === 'number' ? \Elementor\Controls_Manager::NUMBER : ( $field['type'] === 'textarea' ? \Elementor\Controls_Manager::TEXTAREA : \Elementor\Controls_Manager::TEXT ),
 					'default' => $field['default'],
 				) );
 			}
@@ -93,6 +105,49 @@ class ElementorWidget extends \Elementor\Widget_Base {
 		}
 
 		$this->register_style_controls();
+	}
+
+	/**
+	 * A 'repeater' field (Blocks::block_definitions()'s 'item_fields' +
+	 * 'default' rows) becomes a real Elementor repeater control — "Add
+	 * Item" in the panel, drag-to-reorder, one sub-control per
+	 * item_fields entry. get_settings_for_display() hands render() back
+	 * an array of associative arrays (one per row) for a control
+	 * registered this way, which is exactly the shape a render callback
+	 * already expects (e.g. Integration::render_membership_tiers()'s
+	 * $atts['tiers']) — no reshaping needed between Elementor's storage
+	 * format and this codebase's own $atts convention. An 'image'
+	 * item_field becomes a MEDIA sub-control the same way a top-level
+	 * 'image' field does — its row value comes back as
+	 * ['url' => ..., 'id' => ...], so a render callback consuming a
+	 * repeater row with an image column must unwrap $row['field']['url']
+	 * itself (unlike top-level image fields, render() can't unwrap this
+	 * generically per-row without knowing which item_fields are images).
+	 */
+	private function add_repeater_control( string $key, array $field, string $td ): void {
+		$repeater = new \Elementor\Repeater();
+		foreach ( $field['item_fields'] as $item_key => $item_field ) {
+			if ( $item_field['type'] === 'image' ) {
+				$repeater->add_control( $item_key, array(
+					'label'   => $item_field['label'],
+					'type'    => \Elementor\Controls_Manager::MEDIA,
+					'default' => array( 'url' => isset( $item_field['default'] ) ? $item_field['default'] : '' ),
+				) );
+				continue;
+			}
+			$repeater->add_control( $item_key, array(
+				'label'   => $item_field['label'],
+				'type'    => $item_field['type'] === 'textarea' ? \Elementor\Controls_Manager::TEXTAREA : \Elementor\Controls_Manager::TEXT,
+				'default' => isset( $item_field['default'] ) ? $item_field['default'] : '',
+			) );
+		}
+		$this->add_control( $key, array(
+			'label'       => $field['label'],
+			'type'        => \Elementor\Controls_Manager::REPEATER,
+			'fields'      => $repeater->get_controls(),
+			'default'     => isset( $field['default'] ) ? $field['default'] : array(),
+			'title_field' => isset( $field['title_field'] ) ? $field['title_field'] : '',
+		) );
 	}
 
 	/**
@@ -163,6 +218,19 @@ class ElementorWidget extends \Elementor\Widget_Base {
 		$settings = $this->get_settings_for_display();
 		$atts     = array();
 		foreach ( $this->fw_def['fields'] as $key => $field ) {
+			if ( $field['type'] === 'repeater' ) {
+				$atts[ $key ] = isset( $settings[ $key ] ) && is_array( $settings[ $key ] ) ? $settings[ $key ] : $field['default'];
+				continue;
+			}
+			if ( $field['type'] === 'image' ) {
+				// Elementor's MEDIA control settings come back as
+				// ['url' => ..., 'id' => ...] — every render callback in
+				// this codebase expects a plain URL string (same as
+				// $config->get('pages.*.image') elsewhere), so unwrap it
+				// here once rather than in every render callback.
+				$atts[ $key ] = ( ! empty( $settings[ $key ]['url'] ) ) ? $settings[ $key ]['url'] : $field['default'];
+				continue;
+			}
 			$atts[ $key ] = isset( $settings[ $key ] ) && $settings[ $key ] !== '' ? $settings[ $key ] : $field['default'];
 		}
 		echo call_user_func( $this->fw_def['render'], $atts );

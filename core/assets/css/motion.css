@@ -1,0 +1,346 @@
+/**
+ * Shared motion layer. Pairs with core/assets/js/motion.js.
+ *
+ * Two gates, deliberately redundant:
+ *   1. html.fw-motion — added by motion.js only when IntersectionObserver
+ *      exists and the visitor allows motion. Without it every rule here is
+ *      inert and the page renders plain and fully visible.
+ *   2. prefers-reduced-motion — catches a visitor who changes the OS
+ *      setting after load, which gate 1 alone would miss.
+ *
+ * Scoping under html.fw-motion also buys a class of specificity over each
+ * theme's own rules, so this file wins where intended regardless of
+ * enqueue order (the five themes use five different style handles).
+ *
+ * Every duration and curve reads a --fw-* token, so one file produces five
+ * different characters from five token sets.
+ *
+ * Client controls (Motion settings tab, Motion.php):
+ *   - html.fw-off-{effect}: motion.js adds one per disabled effect; every
+ *     rule below is gated with :not(). Theme stylesheets gate their own
+ *     motion rules on the same classes (hero-photo).
+ *   - --fw-motion-speed and --fw-speed-{effect}: unitless multipliers on
+ *     :root, emitted only when changed. --fw-motion-base is the theme's
+ *     own multiplier (Larkhaven runs 1.2). All three fold into the
+ *     --fw-t-* durations and --fw-k-* factors declared on html.fw-motion,
+ *     which is also what the theme stylesheets read for their own timings.
+ *
+ * Animates transform/opacity/filter only. No background-attachment: fixed.
+ * will-change is set only while an element is mid-reveal and dropped once
+ * it lands.
+ */
+
+@media (prefers-reduced-motion: no-preference) {
+
+	html.fw-motion {
+		--fw-k: calc(var(--fw-motion-base, 1) * var(--fw-motion-speed, 1));
+		--fw-k-reveal:       calc(var(--fw-k) * var(--fw-speed-reveal, 1));
+		--fw-k-stagger:      calc(var(--fw-k) * var(--fw-speed-stagger, 1));
+		--fw-k-photo:        calc(var(--fw-k) * var(--fw-speed-photo, 1));
+		--fw-k-text:         calc(var(--fw-k) * var(--fw-speed-text, 1));
+		--fw-k-hero-photo:   calc(var(--fw-k) * var(--fw-speed-hero-photo, 1));
+		--fw-k-hero-lift:    calc(var(--fw-k) * var(--fw-speed-hero-lift, 1));
+		--fw-k-cards:        calc(var(--fw-k) * var(--fw-speed-cards, 1));
+
+		--fw-t-reveal:    calc(1.1s * var(--fw-k-reveal));
+		--fw-t-photo:     calc(1.55s * var(--fw-k-photo));
+		--fw-t-hero-push: calc(7s * var(--fw-k-hero-photo));
+		--fw-t-hero-lift: calc(1.8s * var(--fw-k-hero-lift));
+		--fw-t-cards:     calc(2s * var(--fw-k-cards));
+		--fw-t-text:      calc(1.05s * var(--fw-k-text));
+		--fw-t-word:      calc(1.3s * var(--fw-k-text));
+	}
+
+	/* 1. Core scroll reveal — one shared recipe for all five themes.
+
+	   Keys off .fw-revealable, the prefix-agnostic marker motion.js stamps
+	   on every theme's reveal targets regardless of which system tagged
+	   them (Larkhaven's class-based auto-detection or the other four
+	   themes' own [data-{prefix}-reveal] attributes). Specificity (html +
+	   .fw-motion + :not() + .fw-revealable) is deliberately above each
+	   theme's own .{prefix}-reveal-init [data-{prefix}-reveal] rule, so
+	   this wins regardless of stylesheet order.
+
+	   Blur-and-rise: opacity + a 32px lift + a small easing scale + a soft
+	   6px blur resolving together. Briefly (2026-09-11) made lighter and
+	   per-target (2px/0px via a --fw-reveal-blur override on photo/card
+	   surfaces) after an audit called the original too slow and the blur
+	   too heavy on large photo grids — reverted back to this recipe on
+	   request, with only the base duration nudged down (see --fw-t-reveal
+	   above: 1.35s -> 1.1s) rather than the full original 1.35s. */
+	html.fw-motion:not(.fw-off-reveal) .fw-revealable {
+		opacity: 0;
+		transform: translateY(32px) scale(0.985);
+		filter: blur(6px);
+		transition:
+			opacity var(--fw-t-reveal) var(--fw-ease),
+			transform var(--fw-t-reveal) var(--fw-ease),
+			filter var(--fw-t-reveal) var(--fw-ease);
+		/* Declared inside the reveal rule so it can only delay the
+		   entrance, never the hover transitions these cards also carry.
+
+		   The multiplier is the single knob for cascade pace across the
+		   line. It scales BOTH sources of delay — the automatic grid
+		   stagger and the hand-authored data-{prefix}-reveal-delay values
+		   in each theme's front-page.php — so the two can't drift apart.
+		   Scaling the stagger constant in motion.js instead would have
+		   left every authored delay untouched. */
+		transition-delay: calc(var(--fw-reveal-delay, 0s) * 1.35 * var(--fw-k-stagger));
+		will-change: opacity, transform, filter;
+	}
+	html.fw-motion:not(.fw-off-reveal) .fw-revealable.is-visible {
+		opacity: 1;
+		transform: none;
+		filter: none;
+		will-change: auto;
+	}
+
+	/* 2. Photo settle — a photo box that eases out of a slight scale reads
+	   as settling rather than snapping into place.
+
+	   div.ph-img is the safe target: every dedicated photo box here is a
+	   DIV carrying .ph-img, while the full-bleed heroes and bands are
+	   <section class="fw-hero ph-img"> and must not scale, since that would
+	   scale their headline and CTA too.
+
+	   Longer than the reveal it rides on so the photo is still settling
+	   after the copy has arrived.
+
+	   :not(.fw-revealable) is load-bearing, found while chasing "images
+	   look too fast / the animation is bad" (2026-09-10). `transition` is
+	   a shorthand — this rule's `html.fw-motion div.ph-img` beats rule 1's
+	   `html.fw-motion .fw-revealable` on specificity (both tie at 2
+	   classes, but this rule's 2 elements beats rule 1's 1), so for a
+	   photo box that is ITSELF a reveal target (Larkhaven auto-tags
+	   .fw-split-media directly; other themes hand-tag one the same way),
+	   this rule's transform-only transition was silently replacing rule
+	   1's full opacity+transform+filter list — opacity and filter then
+	   have no transition at all and snap instantly, while only the scale
+	   eases in over the remaining 1.15s. Reads exactly like "too fast":
+	   the photo just appears, then keeps almost-imperceptibly settling.
+	   Excluding .fw-revealable here leaves this rule owning only the
+	   plain "photo settle" case (a static box with no reveal of its own)
+	   and rule 1 owning the dual-role case uncontested. */
+	html.fw-motion:not(.fw-off-photo) div.ph-img:not(.fw-revealable),
+	html.fw-motion:not(.fw-off-photo) .fw-split-media:not(.fw-revealable) {
+		transition: transform var(--fw-t-photo) var(--fw-ease);
+	}
+	/* .fw-revealable is the prefix-agnostic marker motion.js stamps on this
+	   theme's reveal targets — CSS has no "attribute ending in -reveal"
+	   selector, and listing each theme's attribute here would put per-theme
+	   literals back into shared code. Two cases: the photo box is the
+	   reveal target, or it sits inside one. */
+	html.fw-motion:not(.fw-off-photo) .fw-revealable:not(.is-visible) div.ph-img,
+	html.fw-motion:not(.fw-off-photo) .fw-revealable:not(.is-visible) .fw-split-media,
+	html.fw-motion:not(.fw-off-photo) div.ph-img.fw-revealable:not(.is-visible),
+	html.fw-motion:not(.fw-off-photo) .fw-split-media.fw-revealable:not(.is-visible) {
+		transform: scale(1.045);
+	}
+
+	/* 3. Hero photo entrance — a slow scale settle plus a light lift, on a
+	   layer motion.js injects beneath the hero content.
+
+	   The layer is not optional. The photo is a background-image on the
+	   <section> itself, so transforming it would carry the headline and CTA
+	   with it. An earlier attempt animated background-size (108% -> cover)
+	   to avoid the extra markup and had to be reverted: a single percentage
+	   sets width with auto height, abandoning cover framing, and
+	   background-size cannot interpolate from the cover keyword — the photo
+	   painted at the wrong framing and then snapped. Transform on a
+	   dedicated layer is the only version of this that works, and it is
+	   GPU-composited rather than repainting the photo each frame.
+
+	   Two nested elements on purpose: .fw-hero--band runs overflow:visible
+	   so the Commerce7 calendar dropdown can escape the card, so the scaled
+	   photo has to be clipped by its own wrapper instead of by the hero.
+
+	   Runs on entry, not on load, so a band further down the page still
+	   animates when it is actually reached. */
+	html.fw-motion .fw-has-media { isolation: isolate; }
+	html.fw-motion .fw-hero-media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		border-radius: inherit;
+		pointer-events: none;
+	}
+	html.fw-motion .fw-hero-media-inner {
+		position: absolute;
+		inset: 0;
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
+	html.fw-motion:not(.fw-off-hero-photo) .fw-hero-media-inner { transform: scale(1.08); }
+	html.fw-motion:not(.fw-off-hero-lift) .fw-hero-media-inner { filter: brightness(0.62); }
+	/* Scrim lift and scale run at different lengths on purpose: the light
+	   comes up early, the push keeps going well past it. Three rules because
+	   animation is a shorthand: each effect alone, then both, so switching
+	   one off in settings leaves the other intact.
+
+	   The push is linear, NOT --fw-ease: that token is a hard ease-out that
+	   reaches ~90% inside the first quarter of its duration. Correct for a
+	   settle, wrong for a drift — it would finish the zoom almost at once
+	   and then crawl, which reads as a glitch rather than a push. A Ken
+	   Burns wants constant velocity. */
+	html.fw-motion:not(.fw-off-hero-photo) .fw-hero-media.is-visible .fw-hero-media-inner {
+		animation: fw-hero-push var(--fw-t-hero-push) linear forwards;
+	}
+	html.fw-motion:not(.fw-off-hero-lift) .fw-hero-media.is-visible .fw-hero-media-inner {
+		animation: fw-hero-lift var(--fw-t-hero-lift) var(--fw-ease) forwards;
+	}
+	html.fw-motion:not(.fw-off-hero-photo):not(.fw-off-hero-lift) .fw-hero-media.is-visible .fw-hero-media-inner {
+		animation:
+			fw-hero-push var(--fw-t-hero-push) linear forwards,
+			fw-hero-lift var(--fw-t-hero-lift) var(--fw-ease) forwards;
+	}
+	@keyframes fw-hero-push {
+		from { transform: scale(1.08); }
+		to   { transform: scale(1); }
+	}
+	@keyframes fw-hero-lift {
+		from { filter: brightness(0.62); }
+		to   { filter: brightness(1); }
+	}
+	/* The scrim and grain must stay above the photo layer, and the copy
+	   above both. Each theme sets .fw-hero-content z-index 1 already. */
+	html.fw-motion .fw-has-media::before,
+	html.fw-motion .fw-has-media::after { z-index: 1; }
+	html.fw-motion .fw-has-media .fw-hero-content,
+	html.fw-motion .fw-has-media .alb-split-hero-copy { z-index: 2; }
+
+	/* 4. Press feedback. The audit found essentially no :active state in
+	   any of the five themes, so pressing a control did nothing until the
+	   page navigated. Fast on purpose — press is the one place where slow
+	   feels unresponsive rather than considered. */
+	html.fw-motion:not(.fw-off-press) .fw-btn:active,
+	html.fw-motion:not(.fw-off-press) button:not(.fw-btn):active,
+	html.fw-motion:not(.fw-off-press) [type="submit"]:active {
+		transform: scale(0.985) translateY(0);
+		transition-duration: 0.12s;
+	}
+
+	/* 5. Focus ring easing. The ring itself already exists everywhere for
+	   WCAG 2.4.7; this only stops it snapping on. outline-offset doesn't
+	   trigger layout. */
+	html.fw-motion:not(.fw-off-focus) a,
+	html.fw-motion:not(.fw-off-focus) button,
+	html.fw-motion:not(.fw-off-focus) input,
+	html.fw-motion:not(.fw-off-focus) select,
+	html.fw-motion:not(.fw-off-focus) textarea {
+		transition: outline-offset 0.24s var(--fw-ease);
+	}
+	html.fw-motion:not(.fw-off-focus) :focus-visible { outline-offset: 3px; }
+
+	/* 6. Slow reveal for small grids of large cards — events, team members,
+	   club tiers. Two, three, or six of these, never the fifteen-plus of a
+	   wine/blog grid, so the pacing that suits the latter reads as hurried
+	   here — longer travel and a wider gap between cards. Originally
+	   written for Upcoming Events specifically; Team and Membership Tiers
+	   share the exact same shape (a handful of large, individually
+	   prominent cards) so they share this rule rather than needing their
+	   own copy.
+
+	   Driven by animation rather than by lengthening the reveal
+	   transition, because each theme's reveal rule sets the whole
+	   `transition` shorthand on the card, and the card is also what
+	   carries the hover lift — slowing one would slow the other. An
+	   animation has its own timeline, so the transition is handed back to
+	   the card's own hover timing here.
+
+	   backwards fill holds the start frame through the delay (without it
+	   the card shows, then snaps to hidden when the animation begins) but
+	   releases at the end, where the final frame already equals the
+	   un-animated state, so there is no snap out either.
+
+	   Also gated on the reveal switch: with reveal off the card is already
+	   fully visible, and starting this animation would blink it out first. */
+	html.fw-motion:not(.fw-off-reveal):not(.fw-off-cards) [class*="-event-card"].fw-revealable.is-visible,
+	html.fw-motion:not(.fw-off-reveal):not(.fw-off-cards) .fw-team-card.fw-revealable.is-visible,
+	html.fw-motion:not(.fw-off-reveal):not(.fw-off-cards) .fw-club-tier-card.fw-revealable.is-visible {
+		animation: fw-card-in var(--fw-t-cards) var(--fw-ease) backwards;
+		animation-delay: calc(var(--fw-reveal-delay, 0s) * 2.1 * var(--fw-k-stagger));
+		transition-property: opacity, transform, box-shadow, border-color;
+		transition-duration: 0.4s;
+		transition-delay: 0s;
+	}
+	@keyframes fw-card-in {
+		from { opacity: 0; transform: translateY(16px); }
+		to   { opacity: 1; transform: none; }
+	}
+
+	/* 7. Text sequence. motion.js marks hero content, section heads, split
+	   copy and email-capture blocks .fw-sequenced and gives each child a
+	   --fw-seq step: eyebrow and heading 0, then 1, 2, 3 for what follows.
+	   The block itself is released from rule 1 so the copy is not faded
+	   as a whole and then again piece by piece. A hero headline also
+	   builds word by word from masked spans (outer clips, inner rises
+	   from below its baseline) and is excluded from the child sequence so
+	   the two never double-animate the same text.
+
+	   Animations rather than transitions on purpose: motion.js can mark
+	   an above-the-fold hero visible in the same task that builds the
+	   spans, and a transition would then have no rendered start state.
+
+	   A hand-authored reveal delay on the block (the beat split copy
+	   waits after its photo) is kept as an offset on every child. */
+	html.fw-motion:not(.fw-off-text) .fw-sequenced.fw-revealable {
+		opacity: 1;
+		transform: none;
+		filter: none;
+	}
+	html.fw-motion:not(.fw-off-text) .fw-sequenced > * { opacity: 0; }
+	html.fw-motion:not(.fw-off-text) .fw-sequenced.is-visible > * {
+		animation: fw-text-in var(--fw-t-text) var(--fw-ease) forwards;
+		animation-delay: calc(var(--fw-reveal-delay, 0s) * var(--fw-k-stagger) + var(--fw-seq, 0) * 0.14s * var(--fw-k-text));
+	}
+	html.fw-motion:not(.fw-off-text) .fw-sequenced > h1.fw-kinetic { opacity: 1; }
+	html.fw-motion:not(.fw-off-text) .fw-sequenced.is-visible > h1.fw-kinetic { animation: none; }
+	@keyframes fw-text-in {
+		from { opacity: 0; transform: translateY(18px); }
+		to   { opacity: 1; transform: translateY(0); }
+	}
+	/* Serif descenders need clearance inside the clip box or letters like
+	   "g" and "y" get shaved during the rise (bottom padding). Tall caps
+	   and diacritics need the same headroom at the top — several display
+	   serifs (Albariza's Source Serif 4 worst-hit, at hero size) render
+	   cap-height taller than the line-height the box is sized to, so
+	   without this the tops of capitals were shaved mid-transition as the
+	   word rose into place (2026-09-11 audit). Both paddings are undone by
+	   an equal negative margin, so neither changes the word's actual line
+	   spacing — only the clip box gets taller. */
+	.fw-word {
+		display: inline-block;
+		overflow: hidden;
+		vertical-align: top;
+		padding-top: 0.12em;
+		margin-top: -0.12em;
+		padding-bottom: 0.18em;
+		margin-bottom: -0.18em;
+	}
+	html.fw-motion:not(.fw-off-text) .fw-word > span {
+		display: inline-block;
+		transform: translateY(115%);
+	}
+	html.fw-motion:not(.fw-off-text) .fw-sequenced.is-visible .fw-word > span {
+		animation: fw-word-up var(--fw-t-word) var(--fw-ease) forwards;
+		animation-delay: calc(var(--fw-reveal-delay, 0s) * var(--fw-k-stagger) + var(--fw-word-delay, 0s) * var(--fw-k-text));
+	}
+	@keyframes fw-word-up {
+		from { transform: translateY(115%); }
+		to   { transform: none; }
+	}
+}
+
+/* Outside the motion guard: a printer or PDF export never scrolls, so
+   every below-the-fold reveal would come out blank. */
+@media print {
+	html.fw-motion [data-fw-reveal],
+	html.fw-motion .fw-sequenced > *,
+	html.fw-motion .fw-word > span {
+		opacity: 1 !important;
+		transform: none !important;
+		animation: none !important;
+	}
+}

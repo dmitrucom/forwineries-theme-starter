@@ -36,7 +36,40 @@ class DesignTokens {
 		foreach ( $tokens as $name => $value ) {
 			$css_name = str_replace( '_', '-', $name );
 			$lines[]  = sprintf( '--fw-%s: %s;', $css_name, $value );
+			$rgb = self::hex_to_rgb_triplet( (string) $value );
+			if ( $rgb !== '' ) {
+				// A translucent version of a token (a hover tint, an
+				// overlay) can't be built from the hex custom property
+				// alone — CSS has no "this color at 40% opacity" operator
+				// for a var(). Without this, the only way to write such a
+				// rule at all was a hardcoded rgba(R, G, B, alpha) literal
+				// duplicating the token's own value by hand — exactly how
+				// Fault Line's --fw-clay leaked into 3 sibling themes'
+				// hover effects via copy-paste (see LESSONS.md, 2026-09-10):
+				// every one of those rules sat right next to correctly-
+				// adapted var(--fw-*) references, but the literal itself
+				// had no token to grep for or copy correctly. Emitting
+				// this tuple for every hex token, always, means shared
+				// core CSS can write rgba(var(--fw-clay-rgb), 0.45) once
+				// and have it resolve correctly on every theme with zero
+				// per-theme literal to ever drift again.
+				$lines[] = sprintf( '--fw-%s-rgb: %s;', $css_name, $rgb );
+			}
 		}
 		return ":root {\n\t" . implode( "\n\t", $lines ) . "\n}";
+	}
+
+	/**
+	 * '#7d2035' -> '125, 32, 53' (the exact format rgba()/rgb() accept
+	 * space- or comma-separated inside var()). Silently returns '' for
+	 * anything not a plain 6-digit hex string (radius/spacing/font-name
+	 * token values, short 3-digit hex, an already-rgb() string) — those
+	 * tokens simply get no -rgb companion, which is harmless since
+	 * nothing references one that was never emitted.
+	 */
+	private static function hex_to_rgb_triplet( string $value ): string {
+		if ( ! preg_match( '/^#([0-9a-fA-F]{6})$/', trim( $value ), $m ) ) return '';
+		$hex = $m[1];
+		return sprintf( '%d, %d, %d', hexdec( substr( $hex, 0, 2 ) ), hexdec( substr( $hex, 2, 2 ) ), hexdec( substr( $hex, 4, 2 ) ) );
 	}
 }

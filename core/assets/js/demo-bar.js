@@ -2,16 +2,32 @@
  * GENERATED FILE — do not edit directly. Synced from forwineries-theme-core.
  * Edit the source there and re-run tools/sync-core.sh.
  *
- * Keeps --fw-bar-h (core/assets/css/demo-bar.css) in sync with the demo
- * bar's REAL height, which varies once its contents wrap to a second
- * line on narrow screens — the CSS-only fallback value is just a
- * reasonable single-line guess. Also handles the "×" session-scoped
- * dismiss button.
+ * Keeps --fw-bar-h and --fw-header-h (core/assets/css/demo-bar.css) in
+ * sync with the demo bar's and sticky header's REAL heights — both vary
+ * (the bar once its contents wrap to a second line on narrow screens,
+ * the header once its logo/nav wraps or a client swaps a taller logo),
+ * so a CSS-only fallback is just a reasonable single-line guess. This
+ * file, not motion.js, owns both: it's already enqueued unconditionally
+ * on every front-end page (motion.js is skipped entirely when the
+ * client has switched the whole Motion system off), and scroll-margin
+ * / sticky-offset correctness has to hold regardless of that setting.
+ * Also handles the "×" session-scoped demo-bar dismiss button.
  */
 ( function () {
 	"use strict";
 
 	document.addEventListener( "DOMContentLoaded", function () {
+		// Header height runs unconditionally — every theme has #fw-header
+		// whether or not the demo bar is present on this site.
+		var header = document.getElementById( "fw-header" );
+		if ( header ) {
+			var setHeaderHeight = function () {
+				document.documentElement.style.setProperty( "--fw-header-h", header.offsetHeight + "px" );
+			};
+			setHeaderHeight();
+			window.addEventListener( "resize", setHeaderHeight );
+		}
+
 		var demoBar = document.querySelector( ".fw-demo-bar" );
 		if ( ! demoBar ) return;
 

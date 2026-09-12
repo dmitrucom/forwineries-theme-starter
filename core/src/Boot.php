@@ -46,6 +46,9 @@ class Boot {
 		self::dequeue_parent_theme_assets();
 
 		DesignTokens::register( $config );
+		// After DesignTokens: every curve in motion.css reads --fw-ease.
+		Motion::register( $config );
+		Favicon::register( $config );
 		AgeGate::register( $config );
 		Commerce7\WidgetCleanup::register( $config );
 		Commerce7\Integration::register( $config );
@@ -57,6 +60,9 @@ class Boot {
 		Seo::register( $config );
 		DemoBar::register( $config );
 		Events::register( $config );
+		PressLogos::register( $config );
+		Testimonials::register( $config );
+		SocialFeed::register( $config );
 		Schema::register( $config );
 		PageSetup::register( $config );
 		ContactForms::register( $config );

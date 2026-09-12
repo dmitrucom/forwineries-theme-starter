@@ -81,6 +81,52 @@ html.fw-demo-bar-active { --fw-bar-h: 34px; }
 html.fw-demo-bar-active .fw-age-gate { top: var(--fw-bar-h); }
 html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); }
 
+/* WordPress's own toolbar (#wpadminbar) is also position:fixed; top:0,
+   but at a lower z-index (99999) than this bar (100001) — left alone,
+   the two fully collide and this bar visually blots out the WP toolbar
+   (and everything in it, including "Edit with Elementor") for any
+   logged-in admin. Push this bar below the toolbar instead, at the same
+   two breakpoints WP core itself uses to size #wpadminbar, and add that
+   same height on top of the existing --fw-bar-h offset for the header
+   and age gate so nothing renders underneath either bar. */
+body.admin-bar .fw-demo-bar { top: 32px; }
+html.fw-demo-bar-active body.admin-bar #fw-header,
+html.fw-demo-bar-active body.admin-bar .fw-age-gate { top: calc(var(--fw-bar-h) + 32px); }
+@media screen and (max-width: 782px) {
+  body.admin-bar .fw-demo-bar { top: 46px; }
+  html.fw-demo-bar-active body.admin-bar #fw-header,
+  html.fw-demo-bar-active body.admin-bar .fw-age-gate { top: calc(var(--fw-bar-h) + 46px); }
+}
+
+/* Every product theme's own style.css switches #fw-header to
+   position:static below 900px (a deliberate, separate fix stopping
+   the sticky header from colliding with position:fixed mobile
+   checkout/cart action bars — see each theme's own comment at that
+   rule). A static element ignores `top` entirely, so every `top:`
+   rule above — correct for the sticky/fixed header that exists above
+   900px — silently does nothing at exactly the width a real phone
+   uses, and the header (plus anything inside it, e.g. an announcement
+   line above the logo) renders directly underneath the fixed demo bar
+   instead of below it, invisible rather than merely misaligned.
+   Confirmed live on Vespera at 375px width: its announcement bar sat
+   at the very top of the document, fully hidden behind the demo bar,
+   both computed at y:0. margin-top works identically to top for a
+   static element (only top/left/right/bottom are ignored), so this
+   mirrors each rule above with the equivalent margin-top, scoped to
+   the same 900px breakpoint every theme uses for its own
+   position:static override — the pre-existing `top:` rules become
+   harmless no-ops here rather than needing to be removed. The 782px
+   sub-breakpoint must stay AFTER the 900px block in source order,
+   same precedence reasoning as the `top:`-based rules above: both
+   match at ≤782px, so the later, narrower rule needs to win. */
+@media (max-width: 900px) {
+  html.fw-demo-bar-active #fw-header { margin-top: var(--fw-bar-h); }
+  html.fw-demo-bar-active body.admin-bar #fw-header { margin-top: calc(var(--fw-bar-h) + 32px); }
+}
+@media screen and (max-width: 782px) {
+  html.fw-demo-bar-active body.admin-bar #fw-header { margin-top: calc(var(--fw-bar-h) + 46px); }
+}
+
 /* Session-scoped dismiss (the "×" button, core/assets/js/demo-bar.js) —
    separate from the permanent "Hide demo bar" admin toggle above:
    closing it here only lasts for this browsing session (sessionStorage)
@@ -90,6 +136,23 @@ html.fw-demo-bar-active #fw-header { top: var(--fw-bar-h); }
    page has already loaded — no matching CSS fallback needed the way
    the --active rule above has one for its own pre-JS moment. */
 html.fw-demo-bar-dismissed .fw-demo-bar { display: none; }
+
+/* Section heads are the usual same-page scroll target — a nav link, a
+   browser "find", a focus jump — and without this they land tucked
+   under the sticky header (and demo bar, if active) instead of clear of
+   it: both are position:fixed/sticky, so they overlap page content
+   rather than pushing it down, and the browser's own scroll-into-view
+   math has no way to know that on its own. --fw-header-h is kept in
+   sync with #fw-header's real height by demo-bar.js above, same
+   reasoning as --fw-bar-h. Zeroed below 900px to match #fw-header's own
+   position:static override there (see above): a static header no
+   longer overlaps the content below it, so no offset is needed. */
+.fw-section-head {
+  scroll-margin-top: calc(var(--fw-bar-h, 0px) + var(--fw-header-h, 0px) + 16px);
+}
+@media (max-width: 900px) {
+  .fw-section-head { scroll-margin-top: var(--fw-bar-h, 0px); }
+}
 
 @media (max-width: 700px) {
   .fw-demo-bar-inner { padding: 6px 16px; }
@@ -103,4 +166,13 @@ html.fw-demo-bar-dismissed .fw-demo-bar { display: none; }
      enough width for Request + close to stay on row one with it, and
      the switcher still gets its own row below either way. */
   .fw-demo-bar-label-full { display: none; }
+  /* Row 1 becomes skin name + Request pill + close, with the switcher
+     dropped to its own row below (order: 3, above) — .fw-demo-switcher
+     no longer sits in row 1 to soak up the margin-left: auto that pins
+     it to the right at wider widths (see .fw-demo-switcher above), so
+     without a replacement here that same auto margin, row 1 just
+     left-aligns skin/pill/close with a ragged gap of empty bar to their
+     right instead of the close button reading as pinned to the bar's
+     far edge. */
+  .fw-demo-bar-close { margin-left: auto; }
 }

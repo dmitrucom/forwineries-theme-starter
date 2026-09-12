@@ -26,7 +26,7 @@
 		var attributes = {};
 		def.fields.forEach( function ( field ) {
 			attributes[ field.key ] = {
-				type: field.type === 'number' ? 'number' : 'string',
+				type: field.type === 'number' ? 'number' : ( field.type === 'repeater' ? 'array' : 'string' ),
 				default: field.default,
 			};
 		} );
@@ -42,7 +42,21 @@
 				var blockAttributes = props.attributes;
 				var setAttributes = props.setAttributes;
 
-				var controls = def.fields.map( function ( field ) {
+				// Repeater fields (e.g. Membership Tiers) have no Gutenberg
+				// inspector control yet — Elementor's own Repeater control
+				// covers them (ElementorWidget::add_repeater_control()),
+				// and the block simply renders with the PHP-side default
+				// rows here, same as any other field a buyer hasn't
+				// touched. window.fwC7Blocks already carries the right
+				// 'array' attribute type for these (see blocks.php's
+				// block_attribute_type()), so the block still registers
+				// and previews correctly; only its own inspector edit UI
+				// is deferred.
+				var editableFields = def.fields.filter( function ( field ) {
+					return field.type !== 'repeater' && field.type !== 'image';
+				} );
+
+				var controls = editableFields.map( function ( field ) {
 					return el( TextControl, {
 						key: field.key,
 						label: field.label,
@@ -59,7 +73,7 @@
 				return el(
 					Fragment,
 					{},
-					def.fields.length > 0
+					editableFields.length > 0
 						? el(
 							InspectorControls,
 							{},

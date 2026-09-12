@@ -138,7 +138,12 @@ class AgeGate {
 			'eyebrow'          => __( 'Please Confirm', $config->text_domain() ),
 			'heading'          => sprintf( __( 'Welcome to %s', $config->text_domain() ), $config->brand_name() ),
 			'intro'            => __( 'You must be of legal drinking age in your country of residence to enter this site.', $config->text_domain() ),
-			'bg_image'         => get_stylesheet_directory_uri() . '/assets/images/age-gate-bg.jpg',
+			// Every theme sets its own age_gate.bg_image, so this default is
+			// the "theme forgot to" path — and it used to name a file no
+			// theme has ever shipped (assets/images/age-gate-bg.jpg),
+			// i.e. a silent 404 behind the gate. Resolve it the same way a
+			// CTA band resolves a missing photo instead.
+			'bg_image'         => $config->band_image(),
 			'min_age'          => 21,
 			'region_label'     => __( 'Country / Region', $config->text_domain() ),
 			'remember_label'   => __( 'Remember me for 30 days', $config->text_domain() ),

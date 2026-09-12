@@ -191,6 +191,26 @@ class Catalog {
 		return $all;
 	}
 
+	/**
+	 * Commerce7's own image CDN serves whichever named size sits in the
+	 * URL's path (.../images/{original|large|medium|small}/filename) —
+	 * confirmed live: "original" here is the untouched upload (900x3000,
+	 * ~1MB PNG), "large" is a real resize (300x1000, ~120KB), not a
+	 * CSS-scaled copy of the same bytes. `$product['image']` from the
+	 * REST API always comes back as the "original" variant, which is
+	 * appropriate for a large, prominent display (e.g. the Flagship Wine
+	 * split-photo section, which calls shape_wine() too) but wasteful
+	 * for a small thumbnail — confirmed as the direct cause of "Keep
+	 * Exploring" loading slowly, one ~1MB bottle photo per related wine.
+	 * Deliberately applied only where each thumbnail is actually used,
+	 * not inside shape_wine() itself, so a caller displaying the photo
+	 * large still gets the original.
+	 */
+	private static function thumbnail_image( string $url, string $size = 'large' ): string {
+		if ( ! $url ) return $url;
+		return str_replace( '/images/original/', '/images/' . $size . '/', $url );
+	}
+
 	public static function shape_wine( array $product ): array {
 		$variant = isset( $product['variants'][0] ) ? $product['variants'][0] : array();
 		$wine    = isset( $product['wine'] ) ? $product['wine'] : array();
@@ -246,6 +266,88 @@ class Catalog {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * The flagship-wine spotlight — same fallback-chain logic every
+	 * original theme hardcoded on its own homepage (front-page.php's
+	 * "FLAGSHIP WINE" section): a Commerce7 product slug drives the
+	 * photo/heading/note by default, but each of the three has its own
+	 * independent manual override, so an admin can fix just the heading
+	 * (say) while the photo and note keep coming from the live product.
+	 * Genuinely live product data (needs the optional App ID/Secret Key
+	 * under Setup, same as render_wines()/render_club_teaser()) — not
+	 * just a themed link, since the real "Add to Cart" button below
+	 * needs a real slug to attach to regardless.
+	 *
+	 * Unlike the homepage's own hardcoded copy of this section (which
+	 * can assume an admin has already configured things, since it's
+	 * built into the theme), this is a general-purpose Elementor widget
+	 * a buyer might drop onto ANY page with nothing configured yet —
+	 * never renders an empty card shell with no photo/heading/note at
+	 * all; falls back to an admin-only config notice instead, same
+	 * pattern as every other Commerce7 widget in this file.
+	 */
+	public static function render_flagship_wine( Config $config, array $atts = array() ): string {
+		$slug = isset( $atts['slug'] ) ? trim( $atts['slug'] ) : '';
+		$wine = $slug ? self::find_wine_by_slug( $config, $slug ) : null;
+
+		$image       = isset( $atts['image'] ) ? trim( $atts['image'] ) : '';
+		$is_c7_photo = false;
+		if ( ! $image && $wine && ! empty( $wine['image'] ) ) {
+			$image       = $wine['image'];
+			$is_c7_photo = true;
+		}
+
+		$heading = isset( $atts['heading'] ) ? trim( $atts['heading'] ) : '';
+		if ( ! $heading && $wine && ! empty( $wine['title'] ) ) {
+			$heading = $wine['title'];
+		}
+
+		$note = isset( $atts['note'] ) ? trim( $atts['note'] ) : '';
+		if ( ! $note && $wine ) {
+			if ( ! empty( $wine['teaser'] ) ) {
+				$note = $wine['teaser'];
+			} elseif ( ! empty( $wine['subtitle'] ) ) {
+				$note = $wine['subtitle'];
+			}
+		}
+
+		if ( ! $heading && ! $image && ! $note ) {
+			return Integration::config_notice( $config, __( 'Flagship Wine: set a Commerce7 product slug (needs the optional App ID/Secret Key under Setup), or fill in the heading/photo/note overrides by hand, to show this section.', $config->text_domain() ) );
+		}
+
+		$eyebrow = isset( $atts['eyebrow'] ) ? trim( $atts['eyebrow'] ) : '';
+		// Only clickable with a real slug — a heading/photo from a manual
+		// override alone has no product page to link to.
+		$url = $slug ? home_url( '/product/' . $slug ) : '';
+
+		ob_start();
+		?>
+		<section class="fw-section">
+			<div class="fw-container">
+				<div class="fw-split">
+					<?php /* Same cover-vs-contain distinction as the original:
+					   Commerce7's own product photo is a bottle cutout on a
+					   plain background, not the wide still-life shot this
+					   box's default background-size:cover assumes — cover
+					   crops a bottle photo into an unrecognizable close-up. */ ?>
+					<?php if ( $url ) : ?><a href="<?php echo esc_url( $url ); ?>" tabindex="-1" aria-hidden="true"><?php endif; ?>
+					<div class="fw-split-media ph-img ph-wine<?php echo $is_c7_photo ? ' fw-split-media--product-photo' : ''; ?>" <?php if ( $image ) : ?>style="background-image:url('<?php echo esc_url( $image ); ?>');"<?php endif; ?>>
+						<?php if ( ! $image ) : ?><span class="ph-tag">wine-bottle-still-life — 500x700</span><?php endif; ?>
+					</div>
+					<?php if ( $url ) : ?></a><?php endif; ?>
+					<div class="fw-split-text">
+						<?php if ( $eyebrow ) : ?><span class="fw-eyebrow"><?php echo esc_html( $eyebrow ); ?></span><?php endif; ?>
+						<h2><?php if ( $url && $heading ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $heading ); ?></a><?php else : ?><?php echo esc_html( $heading ); ?><?php endif; ?></h2>
+						<?php if ( $note ) : ?><p><?php echo esc_html( $note ); ?></p><?php endif; ?>
+						<?php if ( $slug ) : ?><?php echo do_shortcode( '[c7_buy slug="' . esc_attr( $slug ) . '"]' ); ?><?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</section>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
@@ -532,7 +634,7 @@ class Catalog {
 						<div class="fw-wine-slider-item">
 							<div class="fw-wine-card fw-wine-card--slider">
 								<?php if ( $item['image'] ) : ?>
-									<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( $item['image'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?> bottle" loading="lazy"></a>
+									<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( self::thumbnail_image( $item['image'] ) ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?> bottle" loading="lazy"></a>
 								<?php else : ?>
 									<div class="ph-img ph-wine fw-wine-img"><span class="ph-tag">wine-bottle-still-life — 500x700</span></div>
 								<?php endif; ?>

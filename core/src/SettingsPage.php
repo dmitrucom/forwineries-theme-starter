@@ -64,9 +64,17 @@ class SettingsPage {
 
 	public static function register( Config $config ): void {
 		add_action( 'admin_menu', function () use ( $config ) {
+			// Deliberately NOT $config->brand_name() (e.g. "Heronrest
+			// Vineyards") here — a buyer renames their site/business away
+			// from the demo skin's name, but never touches this string
+			// (it isn't a customizer/content field, just PHP), so a
+			// brand-derived label would sit in their sidebar forever
+			// showing the original demo identity back at them. "For
+			// Wineries" ties it to the product family instead, which
+			// stays true regardless of what the client renames things to.
 			add_menu_page(
-				sprintf( __( '%s Settings', $config->text_domain() ), $config->brand_name() ),
-				$config->brand_name(),
+				__( 'For Wineries Settings', $config->text_domain() ),
+				__( 'For Wineries', $config->text_domain() ),
 				'manage_options',
 				$config->slug() . '-settings',
 				function () use ( $config ) {
@@ -86,12 +94,33 @@ class SettingsPage {
 				Config::asset_version( '/core/assets/js/settings-tabs.js' ),
 				true
 			);
+
+			// The theme's own brand font (same Google Fonts request the
+			// front-end already makes) — so section headings in here can
+			// use var(--fw-font-heading) instead of borrowing wp-admin's
+			// system font for everything. Body copy/labels stay on
+			// wp-admin's native font deliberately; only headings switch,
+			// same restraint the public site's own type scale uses.
+			$fonts_url = $config->get( 'fonts_url', '' );
+			if ( $fonts_url ) {
+				wp_enqueue_style( 'fw-admin-fonts', $fonts_url, array(), null );
+			}
+
 			wp_enqueue_style(
 				'fw-admin-settings',
 				get_stylesheet_directory_uri() . '/core/assets/css/admin-settings.css',
 				array(),
 				Config::asset_version( '/core/assets/css/admin-settings.css' )
 			);
+			// Bridges the theme's own --fw-* brand tokens (color/font/
+			// radius) onto this one admin page, reusing the exact same
+			// :root block the front-end gets from DesignTokens::css() —
+			// so this dashboard is always that theme's real brand, not a
+			// generic admin skin, with zero per-theme CSS to keep in sync.
+			// Deliberately the shipped defaults, not a client's custom
+			// front-end overrides from the Design tab — this chrome only
+			// needs the stable brand identity, not their latest experiment.
+			wp_add_inline_style( 'fw-admin-settings', DesignTokens::css( $config ) );
 		} );
 	}
 
@@ -112,8 +141,11 @@ class SettingsPage {
 		$tab_ids    = array_keys( $tabs );
 		$active_tab = ( isset( $_GET['tab'] ) && isset( $tabs[ $_GET['tab'] ] ) ) ? sanitize_key( $_GET['tab'] ) : $tab_ids[0];
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( $config->brand_name() ); ?></h1>
+		<div class="wrap <?php echo esc_attr( $config->css( 'settings-page' ) ); ?>">
+			<div class="<?php echo esc_attr( $config->css( 'settings-header' ) ); ?>">
+				<h1><?php esc_html_e( 'For Wineries', $config->text_domain() ); ?></h1>
+				<p class="<?php echo esc_attr( $config->css( 'settings-kicker' ) ); ?>"><?php esc_html_e( 'Site settings', $config->text_domain() ); ?></p>
+			</div>
 
 			<h2 class="nav-tab-wrapper" id="<?php echo esc_attr( $config->css( 'settings-tabs' ) ); ?>">
 				<?php foreach ( $tabs as $tab_id => $tab ) : ?>

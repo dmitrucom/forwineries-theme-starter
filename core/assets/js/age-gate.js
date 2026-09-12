@@ -22,12 +22,53 @@
 
 	var cookieName = window.fwAgeGateCookie || "fw_age_verified";
 
+	// age-gate.css also sets body { overflow: hidden } while the gate is
+	// active, which is enough on desktop and Android — but iOS Safari
+	// ignores overflow:hidden for touch-drag scrolling entirely, so the
+	// page underneath kept drifting a few dozen pixels while a visitor
+	// filled the form (background still touch-scrollable behind the
+	// fixed overlay), landing them mid-page instead of at the top once
+	// the gate closed. The same underlying gap — a "locked" body that
+	// iOS doesn't actually treat as locked while a fixed-position
+	// descendant holds focus — is also what produces the page-zooms-
+	// while-typing glitch: iOS can't reconcile a scrollable body with a
+	// fixed overlay's focused input. Pinning body to position:fixed
+	// removes it from the scrollable flow entirely (not just visually
+	// hidden overflow), which is the standard fix for both at once.
+	var lockScrollY = 0;
+
+	function lockScroll() {
+		lockScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+		var body = document.body.style;
+		body.position = "fixed";
+		body.top = "-" + lockScrollY + "px";
+		body.left = "0";
+		body.right = "0";
+	}
+
+	function unlockScroll() {
+		var body = document.body.style;
+		body.position = "";
+		body.top = "";
+		body.left = "";
+		body.right = "";
+		window.scrollTo( 0, lockScrollY );
+	}
+
 	document.addEventListener( "DOMContentLoaded", function () {
 		var gate  = document.getElementById( "fw-age-gate" );
 		var form  = document.getElementById( "fw-age-gate-form" );
 		var error = document.getElementById( "fw-age-gate-error" );
 
 		if ( ! gate || ! form || ! error ) return;
+
+		// Only the inline wp_head script (which runs before this file
+		// loads) ever adds the active class — reaching this point means
+		// it already decided the gate should show, so the lock always
+		// matches the overlay's own visibility.
+		if ( document.documentElement.classList.contains( "fw-age-gate-active" ) ) {
+			lockScroll();
+		}
 
 		var minAge = parseInt( gate.getAttribute( "data-min-age" ), 10 );
 		if ( ! minAge || minAge < 1 ) minAge = 21;
@@ -86,6 +127,7 @@
 				document.cookie = cookieName + "=1; path=/; SameSite=Lax";
 			}
 			document.documentElement.classList.remove( "fw-age-gate-active" );
+			unlockScroll();
 		} );
 	} );
 } )();

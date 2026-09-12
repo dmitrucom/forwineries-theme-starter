@@ -61,7 +61,18 @@ html.fw-age-gate-active body { overflow: hidden; }
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
 }
-.fw-age-gate-card .fw-eyebrow { color: var(--fw-olive); }
+/* --fw-clay, not --fw-olive: clay is each theme's primary "meant to pop
+   against the card" accent (it's what the submit button below already
+   uses against this same --fw-cream card background), where olive is
+   documented as a secondary/muted accent with no guarantee of
+   contrasting against a card surface at all. That gap is invisible on
+   the 4 themes whose olive happens to be a mid-tone that still reads
+   against a light cream card, but on Vespera — whose tokens invert
+   cream/charcoal for its dark palette — olive is a dark wine tone
+   sitting on an equally dark cream, making the eyebrow brand label
+   nearly unreadable. Clay is checked against every theme's actual
+   --fw-cream value and reads clearly in all five. */
+.fw-age-gate-card .fw-eyebrow { color: var(--fw-clay); }
 .fw-age-gate-card h2 {
   font-family: var(--fw-font-heading);
   font-size: 1.9rem;
@@ -90,8 +101,23 @@ html.fw-age-gate-active body { overflow: hidden; }
   padding: 10px 12px;
   border: 1px solid var(--fw-line);
   border-radius: var(--fw-radius);
+  /* Fixed white/near-black pair, not tokens — deliberately, unlike
+     everything else in this file. These are native <select>/<input>
+     controls (plus their placeholder text, which Chrome/Safari render
+     as a translucent version of the input's own `color` when no
+     ::placeholder rule is set — so this `color` governs the "YYYY" /
+     "MM" / "DD" hints too, not just typed input). --fw-charcoal is
+     guaranteed dark-on-light in 4 of the 5 themes, but Vespera inverts
+     it (light text, for its dark page background) — pairing that
+     inverted value with this hardcoded white field background made the
+     dropdown's selected text and every placeholder nearly invisible.
+     Un-hardcoding the background per theme wouldn't fully fix it either:
+     browsers still render native number spinners and the dropdown's
+     option list in their own OS-default light styling regardless, so a
+     fixed white/near-black pair is the one combination guaranteed
+     legible in every theme and every browser. */
   background: #fff;
-  color: var(--fw-charcoal);
+  color: #1f1f1f;
   font-family: var(--fw-font-body);
   /* iOS Safari auto-zooms the whole page in when a focused form control's
      font-size is under 16px, and doesn't reliably zoom back out once this
