@@ -17,14 +17,19 @@
  * inside #c7-content via client-side URL routing, so there's
  * deliberately no Elementor-defer check here.
  *
- * Route-specific hero images (wines/reservation/club/profile) come from
- * $config->get('pages.c7_content.{route}.image') — per-theme asset
- * paths, no sensible core default. Reservation/club/profile hero COPY
- * (eyebrow/heading/intro) comes from ContentSettings\Framework's own
- * per-route fields (reservation_page_eyebrow and siblings), exactly as
- * before. The wines-route hero never went through ContentSettings in
- * the original themes either — kept that way here rather than silently
- * changing which fields control it.
+ * Route-specific hero images (wines/reservation/club/profile) are
+ * ContentSettings\Framework fields (wines_page_image,
+ * reservation_page_image, club_page_image, profile_page_image —
+ * editable from Settings > Pages & Content, no per-page meta box since
+ * these Commerce7-hosted routes aren't real WordPress Page posts),
+ * falling back to $config->get('pages.c7_content.{route}.image') —
+ * each theme's own default photo — when unset or cleared.
+ * Reservation/club/profile hero COPY (eyebrow/heading/intro) comes from
+ * ContentSettings\Framework's own per-route fields (reservation_page_eyebrow
+ * and siblings), exactly as before. The wines-route hero's eyebrow/
+ * heading/intro never went through ContentSettings in the original
+ * themes either — kept that way here rather than silently changing
+ * which fields control it.
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -66,9 +71,10 @@ get_header();
 ?>
 
 <?php if ( $fw_is_wines_route ) :
-	$fw_wines_hero = $fw_config->get( 'pages.c7_content.wines', array() );
+	$fw_wines_hero  = $fw_config->get( 'pages.c7_content.wines', array() );
+	$fw_wines_image = Framework::field( $fw_config, 'wines_page_image', isset( $fw_wines_hero['image'] ) ? $fw_wines_hero['image'] : '' );
 	?>
-	<section class="fw-hero fw-hero--compact ph-img ph-stone" style="background-image:url('<?php echo esc_url( isset( $fw_wines_hero['image'] ) ? $fw_wines_hero['image'] : '' ); ?>');">
+	<section class="fw-hero fw-hero--compact ph-img ph-stone" style="background-image:url('<?php echo esc_url( $fw_wines_image ); ?>');">
 		<div class="fw-hero-content">
 			<span class="fw-eyebrow"><?php echo esc_html( isset( $fw_wines_hero['eyebrow'] ) ? $fw_wines_hero['eyebrow'] : __( 'Our Collection', $fw_config->text_domain() ) ); ?></span>
 			<h1><?php echo esc_html( isset( $fw_wines_hero['heading'] ) ? $fw_wines_hero['heading'] : __( 'All Wines', $fw_config->text_domain() ) ); ?></h1>
@@ -78,7 +84,7 @@ get_header();
 <?php endif; ?>
 
 <?php if ( $fw_is_reservation_route ) :
-	$fw_hero_image = $fw_config->get( 'pages.c7_content.reservation.image', '' );
+	$fw_hero_image = Framework::field( $fw_config, 'reservation_page_image', $fw_config->get( 'pages.c7_content.reservation.image', '' ) );
 	?>
 	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( $fw_hero_image ); ?>');">
 		<div class="fw-hero-content">
@@ -90,7 +96,7 @@ get_header();
 <?php endif; ?>
 
 <?php if ( $fw_is_club_route ) :
-	$fw_hero_image = $fw_config->get( 'pages.c7_content.club.image', '' );
+	$fw_hero_image = Framework::field( $fw_config, 'club_page_image', $fw_config->get( 'pages.c7_content.club.image', '' ) );
 	?>
 	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( $fw_hero_image ); ?>');">
 		<div class="fw-hero-content">
@@ -102,7 +108,7 @@ get_header();
 <?php endif; ?>
 
 <?php if ( $fw_is_profile_route ) :
-	$fw_hero_image = $fw_config->get( 'pages.c7_content.profile.image', '' );
+	$fw_hero_image = Framework::field( $fw_config, 'profile_page_image', $fw_config->get( 'pages.c7_content.profile.image', '' ) );
 	?>
 	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( $fw_hero_image ); ?>');">
 		<div class="fw-hero-content">

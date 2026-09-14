@@ -21,6 +21,12 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 return array(
+	'site_identity_global' => array(
+		'title'  => __( 'Logo', 'newtheme' ),
+		'fields' => array(
+			'logo_image' => array( __( 'Logo image (optional — leave blank to use the default wordmark)', 'newtheme' ), 'image', '' ),
+		),
+	),
 	'hero' => array(
 		'title'  => __( 'Hero (Homepage)', 'newtheme' ),
 		'fields' => array(
@@ -105,6 +111,13 @@ return array(
 			'estate_stat2_label'  => array( __( 'Stat 2 — Label', 'newtheme' ), 'text', 'Estate acres' ),
 			'estate_stat3_number' => array( __( 'Stat 3 — Number', 'newtheme' ), 'text', '0' ),
 			'estate_stat3_label'  => array( __( 'Stat 3 — Label', 'newtheme' ), 'text', 'Wines produced' ),
+			// Defaults match functions.php's pages.estate.hero/.history/
+			// .winemaking — those config values are now just the fallback
+			// used when this field is left blank, see core/templates/
+			// page-estate.php.
+			'estate_hero_image'       => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
+			'estate_history_image'    => array( __( 'History photo', 'newtheme' ), 'image', '' ),
+			'estate_winemaking_image' => array( __( 'Winemaking photo', 'newtheme' ), 'image', '' ),
 		),
 	),
 
@@ -150,6 +163,10 @@ return array(
 			// 'visit_hours' above and 'visit_page_hours' below together.
 			'visit_page_hours'     => array( __( 'Hours (keep in sync with "Hours line" in Visit CTA above)', 'newtheme' ), 'textarea', 'Daily 10am–5pm · By appointment' ),
 			'visit_page_map_embed' => array( __( 'Map embed URL (Google Maps "Embed a map" src)', 'newtheme' ), 'url', '' ),
+			// Default matches functions.php's pages.visit.image — that
+			// config value is now just the fallback, see core/templates/
+			// page-visit.php.
+			'visit_page_image'     => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
 		),
 	),
 
@@ -159,6 +176,20 @@ return array(
 			'gift_cards_eyebrow' => array( __( 'Eyebrow', 'newtheme' ), 'text', 'Give the Gift of Wine' ),
 			'gift_cards_heading' => array( __( 'Heading', 'newtheme' ), 'text', 'Gift Cards' ),
 			'gift_cards_intro'   => array( __( 'Intro paragraph', 'newtheme' ), 'textarea', 'Replace this placeholder with a short pitch for gift cards — how they\'re delivered and redeemed.' ),
+			// Default matches functions.php's pages.gift_cards.image —
+			// that config value is now just the fallback, see
+			// core/templates/page-gift-cards.php.
+			'gift_cards_image'  => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
+		),
+	),
+
+	'wines_page' => array(
+		'title'  => __( 'Wines / Shop Page (Commerce7)', 'newtheme' ),
+		'fields' => array(
+			// Default matches functions.php's pages.c7_content.wines.image
+			// — that config value is now just the fallback, see
+			// core/templates/page-c7-content.php.
+			'wines_page_image' => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
 		),
 	),
 
@@ -168,6 +199,10 @@ return array(
 			'club_page_eyebrow' => array( __( 'Eyebrow', 'newtheme' ), 'text', 'Membership' ),
 			'club_page_heading' => array( __( 'Heading', 'newtheme' ), 'text', 'Wine Club' ),
 			'club_page_intro'   => array( __( 'Intro paragraph', 'newtheme' ), 'textarea', 'Replace this placeholder with an overview of your club tiers.' ),
+			// Default matches functions.php's pages.c7_content.club.image
+			// — that config value is now just the fallback, see
+			// core/templates/page-c7-content.php.
+			'club_page_image'   => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
 			'club_tiers'        => array(
 				__( 'Tiers', 'newtheme' ),
 				'repeater',
@@ -192,6 +227,10 @@ return array(
 			'reservation_page_eyebrow' => array( __( 'Eyebrow', 'newtheme' ), 'text', 'Tastings by Appointment' ),
 			'reservation_page_heading' => array( __( 'Heading', 'newtheme' ), 'text', 'Reserve a Tasting' ),
 			'reservation_page_intro'   => array( __( 'Intro paragraph', 'newtheme' ), 'textarea', 'Replace this placeholder with reservation details — pick a date and time below.' ),
+			// Default matches functions.php's
+			// pages.c7_content.reservation.image — that config value is
+			// now just the fallback, see core/templates/page-c7-content.php.
+			'reservation_page_image'   => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
 		),
 	),
 
@@ -201,6 +240,10 @@ return array(
 			'profile_page_eyebrow' => array( __( 'Eyebrow', 'newtheme' ), 'text', 'Your Account' ),
 			'profile_page_heading' => array( __( 'Heading', 'newtheme' ), 'text', 'Welcome Back' ),
 			'profile_page_intro'   => array( __( 'Intro paragraph', 'newtheme' ), 'textarea', 'Manage your orders, wine club membership, and saved details below.' ),
+			// Default matches functions.php's
+			// pages.c7_content.profile.image — that config value is now
+			// just the fallback, see core/templates/page-c7-content.php.
+			'profile_page_image'   => array( __( 'Hero photo', 'newtheme' ), 'image', '' ),
 		),
 	),
 

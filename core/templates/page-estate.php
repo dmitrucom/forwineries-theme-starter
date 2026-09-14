@@ -5,9 +5,12 @@
  * "The Estate" / "How We Work" page. A product theme's own
  * page-templates/page-estate.php stub sets the "Template Name:" header,
  * then requires this file with $fw_config already in scope. Hero/split
- * images come from $config->get('pages.estate.*') — per-theme asset
- * paths, no sensible core default. Copy comes from ContentSettings\
- * Framework's estate_* fields.
+ * images are ContentSettings\Framework fields (estate_hero_image,
+ * estate_history_image, estate_winemaking_image, editable from Settings
+ * > Pages & Content or straight from this page's own edit screen via
+ * PageMetaBox), falling back to $config->get('pages.estate.*') — each
+ * theme's own default photo — when unset or cleared. Copy comes from
+ * the same Framework's estate_* text fields.
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -24,10 +27,13 @@ if ( ElementorDefer::is_built( get_the_ID() ) ) :
 		the_content();
 	endwhile;
 else :
-	$fw_images = $fw_config->get( 'pages.estate', array() );
+	$fw_images        = $fw_config->get( 'pages.estate', array() );
+	$fw_hero_image    = Framework::field( $fw_config, 'estate_hero_image', isset( $fw_images['hero'] ) ? $fw_images['hero'] : '' );
+	$fw_history_image = Framework::field( $fw_config, 'estate_history_image', isset( $fw_images['history'] ) ? $fw_images['history'] : '' );
+	$fw_wine_image    = Framework::field( $fw_config, 'estate_winemaking_image', isset( $fw_images['winemaking'] ) ? $fw_images['winemaking'] : '' );
 	?>
 
-	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( isset( $fw_images['hero'] ) ? $fw_images['hero'] : '' ); ?>');">
+	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( $fw_hero_image ); ?>');">
 		<div class="fw-hero-content">
 			<span class="fw-eyebrow"><?php echo esc_html( Framework::field( $fw_config, 'estate_eyebrow' ) ); ?></span>
 			<h1><?php echo esc_html( Framework::field( $fw_config, 'estate_heading' ) ); ?></h1>
@@ -38,7 +44,7 @@ else :
 	<section class="fw-section">
 		<div class="fw-container">
 			<div class="fw-split">
-				<div class="fw-split-media ph-img" style="background-image:url('<?php echo esc_url( isset( $fw_images['history'] ) ? $fw_images['history'] : '' ); ?>');"></div>
+				<div class="fw-split-media ph-img" style="background-image:url('<?php echo esc_url( $fw_history_image ); ?>');"></div>
 				<div class="fw-split-text">
 					<span class="fw-eyebrow"><?php esc_html_e( 'History', $fw_config->text_domain() ); ?></span>
 					<h2><?php echo esc_html( $fw_config->get( 'pages.estate.history_heading', __( 'Our Story', $fw_config->text_domain() ) ) ); ?></h2>
@@ -70,7 +76,7 @@ else :
 	<section class="fw-section">
 		<div class="fw-container">
 			<div class="fw-split fw-split--reverse">
-				<div class="fw-split-media ph-img" style="background-image:url('<?php echo esc_url( isset( $fw_images['winemaking'] ) ? $fw_images['winemaking'] : '' ); ?>');"></div>
+				<div class="fw-split-media ph-img" style="background-image:url('<?php echo esc_url( $fw_wine_image ); ?>');"></div>
 				<div class="fw-split-text">
 					<span class="fw-eyebrow"><?php esc_html_e( 'Winemaking', $fw_config->text_domain() ); ?></span>
 					<h2><?php echo esc_html( $fw_config->get( 'pages.estate.winemaking_heading', __( 'A Quiet Hand in the Cellar', $fw_config->text_domain() ) ) ); ?></h2>

@@ -67,7 +67,11 @@ this list. In order of what to fill in first:
 - [ ] `pages.home.hero` / `pages.home.reservation` (read by
       `front-page.php` directly) and every `pages.*` image path used by
       core's page templates (estate hero/history/winemaking, visit,
-      gift-cards, wines).
+      gift-cards, wines). These are just fallback defaults — the logo and
+      every one of these template photos are also editable per-site from
+      Settings > Pages & Content or straight from each page's own edit
+      screen (`inc/content-fields.php`'s `site_identity_global` and
+      `*_page` groups), without touching this file.
 - [ ] `menus` — replace with your real nav structure, or leave the
       converged 4-item default if it fits.
 - [ ] `elementor_kit.color_names`, `design.color_tokens` /

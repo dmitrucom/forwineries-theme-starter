@@ -21,6 +21,7 @@ use ForWineries\Core\Config;
 use ForWineries\Core\DemoBar;
 use ForWineries\Core\AgeGate;
 use ForWineries\Core\ContactSettings;
+use ForWineries\Core\ContentSettings\Framework;
 
 $fw_config = new Config( newtheme_fw_config_array() );
 ?><!DOCTYPE html>
@@ -63,8 +64,11 @@ $fw_config = new Config( newtheme_fw_config_array() );
 	</div>
 
 	<div class="fw-container newtheme-header-main">
+		<?php $newtheme_logo_image = Framework::field( $fw_config, 'logo_image' ); ?>
 		<a class="newtheme-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-			<?php if ( has_custom_logo() ) : ?>
+			<?php if ( $newtheme_logo_image !== '' ) : ?>
+				<img src="<?php echo esc_url( $newtheme_logo_image ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" class="newtheme-logo-img">
+			<?php elseif ( has_custom_logo() ) : ?>
 				<?php the_custom_logo(); ?>
 			<?php else : ?>
 				<span>

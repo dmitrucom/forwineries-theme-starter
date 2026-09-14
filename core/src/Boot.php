@@ -67,6 +67,7 @@ class Boot {
 		PageSetup::register( $config );
 		ContactForms::register( $config );
 		ContentSettings\Framework::register( $config );
+		ContentSettings\PageMetaBox::register( $config );
 		ContactSettings::register( $config );
 		DesignSettingsTab::register( $config );
 		ElementorKitDefaults::register( $config );

@@ -47,8 +47,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 class Framework {
 
-	private static function groups( Config $config ): array {
+	/**
+	 * Public so PageMetaBox (a separate rendering surface over these same
+	 * fields) can look up which group a given field key belongs to
+	 * without duplicating the config lookup.
+	 */
+	public static function field_groups( Config $config ): array {
 		return $config->get( 'content_fields', array() );
+	}
+
+	private static function groups( Config $config ): array {
+		return self::field_groups( $config );
 	}
 
 	/**
@@ -204,7 +213,13 @@ class Framework {
 		}, 20 );
 	}
 
-	private static function group_category( string $group_id ): string {
+	/**
+	 * Public: also used by PageMetaBox to find which registered groups
+	 * are homepage sections (the only category with no dedicated real
+	 * WordPress page of its own to attach a meta box to individually —
+	 * they all render on whichever page is the static front page).
+	 */
+	public static function group_category( string $group_id ): string {
 		if ( substr( $group_id, -5 ) === '_page' ) return 'page';
 		if ( substr( $group_id, -7 ) === '_global' ) return 'global';
 		return 'homepage';
@@ -271,32 +286,7 @@ class Framework {
 								<details class="fw-settings-group" id="fw-group-<?php echo esc_attr( $group_id ); ?>" data-fw-group>
 									<summary><?php echo esc_html( $group['title'] ); ?></summary>
 									<div class="fw-settings-group-body">
-										<?php
-										$simple_fields   = array();
-										$repeater_fields = array();
-										foreach ( $group['fields'] as $key => $field ) {
-											if ( $field[1] === 'repeater' ) {
-												$repeater_fields[ $key ] = $field;
-											} else {
-												$simple_fields[ $key ] = $field;
-											}
-										}
-										?>
-										<?php if ( ! empty( $simple_fields ) ) : ?>
-											<table class="form-table" role="presentation">
-												<?php foreach ( $simple_fields as $key => $field ) :
-													list( $label, $type, $default ) = $field;
-													$option_name = $config->option_key( 'content_' . $key );
-													$value       = get_option( $option_name, '' );
-													?>
-													<tr>
-														<th><label for="<?php echo esc_attr( $option_name ); ?>"><?php echo esc_html( $label ); ?></label></th>
-														<td><?php self::render_field_input( $config->text_domain(), $type, $option_name, $option_name, $value, $default ); ?></td>
-													</tr>
-												<?php endforeach; ?>
-											</table>
-										<?php endif; ?>
-										<?php foreach ( $repeater_fields as $key => $field ) : self::render_repeater_field( $config, $key, $field ); endforeach; ?>
+										<?php self::render_group_fields( $config, $group ); ?>
 									</div>
 								</details>
 							<?php endforeach; ?>
@@ -310,6 +300,68 @@ class Framework {
 				</div>
 			</div>
 		<?php
+	}
+
+	/**
+	 * Renders every field in one group: a form-table of its scalar
+	 * fields followed by each of its repeater fields. Shared by the
+	 * settings tab (one group per <details>) and PageMetaBox (one group,
+	 * or a few, inside a single meta box on that page's own edit
+	 * screen) — same markup, same option names, so there's exactly one
+	 * place saved values can live no matter which screen edited them.
+	 */
+	public static function render_group_fields( Config $config, array $group ): void {
+		$simple_fields   = array();
+		$repeater_fields = array();
+		foreach ( $group['fields'] as $key => $field ) {
+			if ( $field[1] === 'repeater' ) {
+				$repeater_fields[ $key ] = $field;
+			} else {
+				$simple_fields[ $key ] = $field;
+			}
+		}
+		if ( ! empty( $simple_fields ) ) : ?>
+			<table class="form-table" role="presentation">
+				<?php foreach ( $simple_fields as $key => $field ) :
+					list( $label, $type, $default ) = $field;
+					$option_name = $config->option_key( 'content_' . $key );
+					$value       = get_option( $option_name, '' );
+					?>
+					<tr>
+						<th><label for="<?php echo esc_attr( $option_name ); ?>"><?php echo esc_html( $label ); ?></label></th>
+						<td><?php self::render_field_input( $config->text_domain(), $type, $option_name, $option_name, $value, $default ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</table>
+		<?php endif;
+		foreach ( $repeater_fields as $key => $field ) {
+			self::render_repeater_field( $config, $key, $field );
+		}
+	}
+
+	/**
+	 * Sanitizes and saves one field's raw submitted value straight to
+	 * its option, exactly as register_setting()'s own sanitize_callback
+	 * + the Settings API's internal update_option() would — used by
+	 * PageMetaBox's own save_post handler, since a meta box's form
+	 * posts to post.php, not options.php, so the Settings API never
+	 * runs for it. $post_data is the raw $_POST superglobal (or a copy
+	 * of it); missing keys are treated as empty/absent, matching what
+	 * an unchecked or cleared field looks like.
+	 */
+	public static function save_field( Config $config, string $key, array $field, array $post_data ): void {
+		$type       = $field[1];
+		$option_key = $config->option_key( 'content_' . $key );
+
+		if ( $type === 'repeater' ) {
+			$subfields = $field[2];
+			$raw       = isset( $post_data[ $option_key ] ) ? $post_data[ $option_key ] : array();
+			update_option( $option_key, self::sanitize_repeater( $raw, $subfields ) );
+			return;
+		}
+
+		$raw = isset( $post_data[ $option_key ] ) ? wp_unslash( $post_data[ $option_key ] ) : '';
+		update_option( $option_key, self::sanitize_value( $type, $raw ) );
 	}
 
 	/**

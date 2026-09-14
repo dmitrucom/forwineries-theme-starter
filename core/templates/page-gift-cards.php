@@ -28,7 +28,7 @@ if ( ElementorDefer::is_built( get_the_ID() ) ) :
 	endwhile;
 else :
 	$fw_gift_card_slug = get_option( $fw_config->option_key( 'c7_gift_card_collection_slug' ), '' );
-	$fw_hero_image      = $fw_config->get( 'pages.gift_cards.image', '' );
+	$fw_hero_image      = Framework::field( $fw_config, 'gift_cards_image', $fw_config->get( 'pages.gift_cards.image', '' ) );
 	?>
 
 	<section class="fw-hero fw-hero--compact ph-img" style="background-image:url('<?php echo esc_url( $fw_hero_image ); ?>');">

@@ -35,7 +35,7 @@ else :
 		$fw_map_address = ContactSettings::get( $fw_config, 'address_line' );
 		$fw_map_embed   = 'https://www.google.com/maps?q=' . rawurlencode( $fw_map_address ) . '&output=embed';
 	}
-	$fw_hero_image = $fw_config->get( 'pages.visit.image', '' );
+	$fw_hero_image = Framework::field( $fw_config, 'visit_page_image', $fw_config->get( 'pages.visit.image', '' ) );
 	$fw_reservation_url = get_option( $fw_config->option_key( 'c7_reservation_url' ), home_url( '/reservation' ) );
 	?>
 

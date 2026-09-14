@@ -1,7 +1,7 @@
 {
-  "core_version": "2a20dcb",
-  "core_commit": "2a20dcb",
-  "synced_at": "2026-09-12T19:25:51Z",
+  "core_version": "40107b7",
+  "core_commit": "40107b7",
+  "synced_at": "2026-09-14T09:08:04Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
@@ -23,7 +23,7 @@
     "assets/js/wines-catalog.js": "d70c89a7a03fe51b73179f2490ac38afd3635e345d25bd09aa1d29272fa77ef9",
     "src/AgeGate.php": "7b0848d2fa9cb4c8bf42941da19c1061729c1d568a4a5ef57979595e0ab0ded2",
     "src/Autoload.php": "823e3402393719b1de389fc9cdd886288e89a977fb8ae0a97f6445bd02e52988",
-    "src/Boot.php": "6ce4a8075c32a9275909b2bcb87f4797511957aed2c928a075ac6e7d4d55559d",
+    "src/Boot.php": "8c83a2aea53d5e6fb16e62e033564ccbb771baea025293cbb2b6aeb7a924e926",
     "src/Breadcrumbs.php": "c851b83133dd6b61c736e1c721a48f6922af85ebcb1981ca1656c0af04c5417a",
     "src/Commerce7/Blocks.php": "f0abeb4e1c43e5ea8496a80abb5a16c899102b803e5a42597b0298a853b7828c",
     "src/Commerce7/Catalog.php": "e425604a7e56619170cb3b4f09b3c2f37821fe0294a9429c9687a3a1f7309e74",
@@ -36,7 +36,8 @@
     "src/Config.php": "9b862a890babcb9ca73f2f3d29870c77e58dd366554e955d0e5207bffb5c6a5f",
     "src/ContactForms.php": "b9b0c5eb6aaaff51f659ae7205e744e87a7c42d81deaa53b6a94cdb745447645",
     "src/ContactSettings.php": "334dc7190a3f87b62936b32246a0c0ab622e88ed021ad301afd4a952d0c76cce",
-    "src/ContentSettings/Framework.php": "eee0fd0625df4ba7066e1d23eb6de7cc66b05a0ac6519939aeacec96509326dc",
+    "src/ContentSettings/Framework.php": "5f0e5a7d665e419c7ce01630799c0e10c3227bc8c3a4ae62913a28cec8925f04",
+    "src/ContentSettings/PageMetaBox.php": "89485fb735eb4a4bd1681684edc520d4b91730bd2a8883660ac1bb39ec5d6ecd",
     "src/DemoBar.php": "2547ee9432653113552d807802425d47e90e13699a68557669cd2cb0903d32a9",
     "src/DesignSettingsTab.php": "8a853f35467de58b195e484e2cf8ec53f133712eeeadb4011fc629f6ef8c022f",
     "src/DesignTokens.php": "a2948b1cf353152745242a42c6a66a07a99746eff39d6485d3a5388012252da9",
@@ -53,12 +54,12 @@
     "src/SocialFeed.php": "5f822a906bbad16d780a02ca9a53e2dcda14d6bb4794c30a06f38cd15ba013c5",
     "src/Testimonials.php": "20f11849859be593f8ee1efbbd08b17a8bf306d3e8afebf7250ef0a24510ad5d",
     "templates/page-c7-checkout.php": "34b5c691e0a7a7904e787f121de9311d4491b32dbcf3543b21aa2859c2aaf83a",
-    "templates/page-c7-content.php": "6c3ef872e9afa3991762fe550de86eea06b17f35c9f7dc6336d94714c5f76f53",
+    "templates/page-c7-content.php": "0e78ba150f6b33b8cccceb3ad83a40148044f4c06076ad9eb8c81bb29758d59e",
     "templates/page-contact.php": "b9924cc88a44bfb8c9f4f434bfa605ab26518169b9a09a23aec23fab6239f7e6",
-    "templates/page-estate.php": "fd110570c28a4571bf41d541804876880a07fa4766a52730608ea8e69ed516a2",
-    "templates/page-gift-cards.php": "07b2bb2c9762271d7f07412e0e166e82b2eb4884f6f8ebf93984a242fd8309b9",
+    "templates/page-estate.php": "f1a2539ebc25a7f30efe8d76d983099ee816590642ae9aa6c115981ec9fa9294",
+    "templates/page-gift-cards.php": "13939243a0e784ff9947db0a3409772dc35bf8dab863dc53ddc303d0e15f97c5",
     "templates/page-team.php": "8f9149269f7f732847e3dbc68777fabb3363f04e3614f598c9c9f2ee4537d393",
     "templates/page-trade-press.php": "653f544e49370f994615fc5d7344566efbd21d8c7e5a02e088148d12f105ad14",
-    "templates/page-visit.php": "08357a3b21497e4f61ae258fce4802735335e881bf15f58bfeea5cd1330999cd"
+    "templates/page-visit.php": "3c3333a19a22a1b3da1a2b3476625b00226a05f7960f4a59dcca60c546e5c06e"
   }
 }
