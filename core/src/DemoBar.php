@@ -44,6 +44,7 @@ class DemoBar {
 			'Vespera'    => 'https://vespera.forwineries.com/',
 			'Albariza'   => 'https://albariza.forwineries.com/',
 			'Heronrest'  => 'https://heronrest.forwineries.com/',
+			'Stonemarch' => 'https://stonemarch.forwineries.com/',
 		);
 	}
 

@@ -20,6 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *       'enabled'        => true,   // false removes the layer and the tab
  *       'auto_reveal'    => false,  // true for a theme with no reveal of its own
  *       'hidden_effects' => array(),// effect ids this theme has no CSS for
+ *       'extra_effects'  => array(),// id => [label, desc, pace] the theme adds
  *   )
  *
  * Client settings live in three options and reach the front end two ways:
@@ -95,6 +96,17 @@ class Motion {
 				'pace'  => false,
 			),
 		);
+		// A theme with motion of its own (a video hero, a pinned section)
+		// registers those here so the client gets the same on/off + pace
+		// controls. Each id also becomes html.fw-off-{id} and
+		// --fw-speed-{id}, which the theme's own CSS/JS gate on.
+		foreach ( (array) $config->get( 'motion.extra_effects', array() ) as $id => $def ) {
+			$all[ $id ] = array(
+				'label' => $def['label'] ?? $id,
+				'desc'  => $def['desc'] ?? '',
+				'pace'  => ! empty( $def['pace'] ),
+			);
+		}
 		foreach ( (array) $config->get( 'motion.hidden_effects', array() ) as $id ) {
 			unset( $all[ $id ] );
 		}

@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *   Repeater: 'key' => array( $label, 'repeater', $subfields, $default_rows )
  *     $subfields is itself   sub_key => array( $sub_label, $type )
  *     $default_rows is an array of  array( sub_key => value, ... )  rows
- * $type: 'text' | 'textarea' | 'url' | 'number' | 'image'
+ * $type: 'text' | 'textarea' | 'url' | 'number' | 'image' | 'video'
  *
  * Option keys use $config->option_key('content_' . $field_key) — the
  * exact same wp_options naming every original theme's
@@ -111,6 +111,7 @@ class Framework {
 				return sanitize_textarea_field( $value );
 			case 'url':
 			case 'image':
+			case 'video':
 				return esc_url_raw( trim( (string) $value ) );
 			default:
 				return sanitize_text_field( $value );
@@ -419,8 +420,8 @@ class Framework {
 			echo '<input type="number" min="1" step="1"' . $id_attr . ' name="' . esc_attr( $name ) . '" class="small-text" value="' . esc_attr( $value ) . '" placeholder="' . esc_attr( $default ) . '">';
 			return;
 		}
-		if ( $type === 'image' ) {
-			self::render_image_input( $text_domain, $name, $id, $value );
+		if ( $type === 'image' || $type === 'video' ) {
+			self::render_image_input( $text_domain, $name, $id, $value, $type );
 			return;
 		}
 		echo '<input type="text"' . $id_attr . ' name="' . esc_attr( $name ) . '" class="regular-text" value="' . esc_attr( $value ) . '" placeholder="' . esc_attr( $default ) . '">';
@@ -434,18 +435,23 @@ class Framework {
 	 * preview) is delegated to core/assets/js/repeater-admin.js, so this
 	 * same markup works inside cloned repeater rows too.
 	 */
-	private static function render_image_input( string $text_domain, string $name, string $id = '', string $value = '' ): void {
-		$id_attr = $id !== '' ? ' id="' . esc_attr( $id ) . '"' : '';
+	private static function render_image_input( string $text_domain, string $name, string $id = '', string $value = '', string $media = 'image' ): void {
+		$id_attr  = $id !== '' ? ' id="' . esc_attr( $id ) . '"' : '';
+		$is_video = $media === 'video';
 		?>
-		<div class="fw-image-field">
+		<div class="fw-image-field" data-fw-media="<?php echo esc_attr( $media ); ?>">
 			<div class="fw-image-field-preview">
-				<img src="<?php echo esc_url( $value ); ?>" alt=""<?php echo $value === '' ? ' hidden' : ''; ?>>
-				<span class="dashicons dashicons-format-image"<?php echo $value !== '' ? ' hidden' : ''; ?>></span>
+				<?php if ( $is_video ) : ?>
+					<span class="dashicons dashicons-format-video"></span>
+				<?php else : ?>
+					<img src="<?php echo esc_url( $value ); ?>" alt=""<?php echo $value === '' ? ' hidden' : ''; ?>>
+					<span class="dashicons dashicons-format-image"<?php echo $value !== '' ? ' hidden' : ''; ?>></span>
+				<?php endif; ?>
 			</div>
 			<div class="fw-image-field-controls">
 				<input type="url"<?php echo $id_attr; ?> name="<?php echo esc_attr( $name ); ?>" class="regular-text code fw-image-field-url" value="<?php echo esc_attr( $value ); ?>" placeholder="https://…">
 				<span class="fw-image-field-buttons">
-					<button type="button" class="button fw-image-field-pick"><?php esc_html_e( 'Choose Image', $text_domain ); ?></button>
+					<button type="button" class="button fw-image-field-pick"><?php $is_video ? esc_html_e( 'Choose Video', $text_domain ) : esc_html_e( 'Choose Image', $text_domain ); ?></button>
 					<button type="button" class="button-link-delete fw-image-field-clear"<?php echo $value === '' ? ' hidden' : ''; ?>><?php esc_html_e( 'Clear', $text_domain ); ?></button>
 				</span>
 			</div>

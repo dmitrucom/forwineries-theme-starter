@@ -81,7 +81,7 @@
 			var clear  = fieldEl.querySelector( '.fw-image-field-clear' );
 			var hasUrl = input && input.value.trim() !== '';
 			if ( img )   { img.src = hasUrl ? input.value.trim() : ''; img.hidden = ! hasUrl; }
-			if ( icon )  { icon.hidden = hasUrl; }
+			if ( icon )  { icon.hidden = hasUrl && fieldEl.getAttribute( 'data-fw-media' ) !== 'video'; }
 			if ( clear ) { clear.hidden = ! hasUrl; }
 		}
 
@@ -115,16 +115,20 @@
 			// element itself — repeated clicks reuse it (standard wp.media
 			// pattern), and separate fields never share selection state.
 			if ( ! fieldEl.fwMediaFrame ) {
+				// data-fw-media="video" is the 'video' field type: same
+				// control, but the library filter and the value differ.
+				var mediaType = fieldEl.getAttribute( 'data-fw-media' ) || 'image';
 				fieldEl.fwMediaFrame = wp.media( {
 					title:    pickBtn.textContent || 'Choose Image',
-					library:  { type: 'image' },
+					library:  { type: mediaType },
 					multiple: false,
-					button:   { text: 'Use this image' }
+					button:   { text: mediaType === 'video' ? 'Use this video' : 'Use this image' }
 				} );
 				fieldEl.fwMediaFrame.on( 'select', function () {
 					var attachment = fieldEl.fwMediaFrame.state().get( 'selection' ).first().toJSON();
 					// 'large' is plenty for every place these images render;
 					// fall back to the original if the size doesn't exist.
+					// A video has no sizes, so it always takes the original.
 					var url = ( attachment.sizes && attachment.sizes.large ) ? attachment.sizes.large.url : attachment.url;
 					fieldEl.querySelector( '.fw-image-field-url' ).value = url;
 					syncImageField( fieldEl );
