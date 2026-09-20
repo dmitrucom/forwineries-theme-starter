@@ -428,6 +428,88 @@
 .fw-cart-link:hover { border-color: var(--fw-clay); color: var(--fw-clay); }
 .fw-cart-link--disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* The side-cart drawer is rendered inside the header's #c7-cart mount,
+   so it inherits the header nav's type (uppercase, letter-spacing,
+   small size, light text) and the theme's global button box lands on
+   its "Remove" link. Reset it to body text; !important because
+   Commerce7 injects its own stylesheet after this file. */
+.c7-side-cart.c7-side-cart {
+  font-family: var(--fw-font-body);
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+  color: var(--fw-charcoal) !important;
+}
+.c7-side-cart .c7-h2 {
+  font-family: var(--fw-font-heading);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--fw-charcoal) !important;
+}
+.c7-side-cart .c7-order-item__title a {
+  font-family: var(--fw-font-heading);
+  font-size: 1.15rem;
+  line-height: 1.25;
+  color: var(--fw-charcoal) !important;
+  text-decoration: none;
+}
+.c7-side-cart .c7-order-item__title a:hover { color: var(--fw-clay) !important; text-decoration: underline; }
+.c7-side-cart .c7-order-item__description { color: var(--fw-charcoal-soft); font-size: 0.9rem; }
+.c7-side-cart button.c7-link {
+  display: inline;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-family: var(--fw-font-body);
+  font-size: 0.85rem;
+  color: var(--fw-charcoal-soft) !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.c7-side-cart button.c7-link:hover { color: var(--fw-clay) !important; }
+.c7-side-cart .c7-order-item__price,
+.c7-side-cart .c7-order-item__price span,
+.c7-side-cart .c7-order-item__total,
+.c7-side-cart .c7-order-summary__title,
+.c7-side-cart .c7-order-summary__value,
+.c7-side-cart .c7-order-summary__value span,
+.c7-side-cart .c7-price--discounted { color: var(--fw-charcoal) !important; }
+.c7-side-cart .c7-order-item__price .c7-price--original { color: var(--fw-charcoal-soft) !important; margin-right: 6px; }
+.c7-side-cart .c7-order-summary__item--total .c7-order-summary__title,
+.c7-side-cart .c7-order-summary__item--total .c7-order-summary__value { font-weight: 600; }
+.c7-side-cart select,
+.c7-side-cart input {
+  font-family: var(--fw-font-body);
+  font-size: 1rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--fw-charcoal) !important;
+  -webkit-text-fill-color: var(--fw-charcoal) !important;
+  background-color: var(--fw-cream) !important;
+}
+#c7-side-cart__header__close {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 6px !important;
+  min-height: 0 !important;
+  color: var(--fw-charcoal) !important;
+  cursor: pointer;
+}
+#c7-side-cart__header__close svg { stroke: currentColor; }
+.c7-side-cart .c7-order-summary__buttons .c7-btn {
+  font-family: var(--fw-font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* core/templates/page-c7-content.php's shared section wrapper — tighter
    than a marketing page's default hero-sized top padding, since a
    Commerce7 route (product/cart especially) should read as "get to the
