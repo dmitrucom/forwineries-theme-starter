@@ -11,7 +11,7 @@ Description:  PLACEHOLDER — replace with a real description. Standalone
               inherits the header, footer, and global typography/color
               system.
 Author:       [Your Name / Studio]
-Version:      0.1.1
+Version:      0.1.2
 Text Domain:  newtheme
 
 NOTE: deliberately NO "Template:" line — this theme is standalone from
@@ -560,36 +560,27 @@ body.newtheme-no-tags .ph-tag { display: none; }
 
 /* =========================================================
    8. WINE GRID / CATALOG (ForWineries\Core\Commerce7\Catalog)
+   Core lays the card out (bottle left, text right, stacked under
+   560px) in commerce7-overrides.css, which loads after this file. Add
+   the theme's look here; do not set aspect-ratio, padding or a hover
+   lift on the card, they fight the core layout (Stonemarch 1.0.4).
+   Selectors carry .fw-wine-grid / .fw-wine-card-body to outrank core.
 ========================================================= */
-.fw-wine-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: var(--fw-space-md);
-}
-.fw-wine-card {
-  background: var(--fw-cream-raised);
-  border-radius: var(--fw-radius);
-  overflow: hidden;
-}
-.fw-wine-img-wrap { position: relative; }
-.fw-wine-img { width: 100%; aspect-ratio: 5 / 7; object-fit: cover; }
-.fw-wine-card-body { padding: var(--fw-space-sm); }
-.fw-wine-card-body h3 { font-size: 1.05rem; margin-bottom: 2px; }
-.fw-wine-subtitle { font-size: 0.85rem; color: var(--fw-charcoal-soft); margin-bottom: 6px; }
-.fw-wine-teaser { font-size: 0.88rem; color: var(--fw-charcoal-soft); }
-.fw-wine-featured-tag,
-.fw-wine-scarcity-badge {
+.fw-wine-grid { --fw-wine-img-size: 190px; }
+.fw-wine-grid .fw-wine-card .fw-wine-img { max-height: 420px; transition: transform .6s ease; }
+.fw-wine-grid .fw-wine-card:hover .fw-wine-img { transform: translateY(-4px); }
+.fw-wine-card .fw-wine-card-body h3 a:hover { color: var(--fw-clay); text-decoration: none; }
+.fw-wine-card .fw-wine-featured-tag {
   display: inline-block;
   font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: var(--fw-clay);
+  background: var(--fw-olive);
   color: var(--fw-cream);
-  padding: 4px 9px;
+  padding: 5px 9px;
   border-radius: var(--fw-radius-sm);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
-.fw-wine-scarcity-badge { position: absolute; top: 10px; left: 10px; margin: 0; }
 .fw-wine-scarcity-badge--standalone { position: static; display: inline-block; }
 
 .fw-catalog-controls {
