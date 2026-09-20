@@ -72,6 +72,7 @@ class Boot {
 		DesignSettingsTab::register( $config );
 		ElementorKitDefaults::register( $config );
 		SettingsPage::register( $config );
+		DeployPurge::register( $config );
 
 		// Later modules register here, in order. Still growing during
 		// Phase 0 — see docs/ARCHITECTURE.md for the planned order.

@@ -1,7 +1,7 @@
 {
-  "core_version": "21b13d5",
-  "core_commit": "21b13d5",
-  "synced_at": "2026-09-20T10:15:24Z",
+  "core_version": "7ff5a76",
+  "core_commit": "7ff5a76",
+  "synced_at": "2026-09-20T10:21:30Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
@@ -23,7 +23,7 @@
     "assets/js/wines-catalog.js": "d70c89a7a03fe51b73179f2490ac38afd3635e345d25bd09aa1d29272fa77ef9",
     "src/AgeGate.php": "7b0848d2fa9cb4c8bf42941da19c1061729c1d568a4a5ef57979595e0ab0ded2",
     "src/Autoload.php": "823e3402393719b1de389fc9cdd886288e89a977fb8ae0a97f6445bd02e52988",
-    "src/Boot.php": "8c83a2aea53d5e6fb16e62e033564ccbb771baea025293cbb2b6aeb7a924e926",
+    "src/Boot.php": "8eaa1778f8f6bdc4e4c56cc7756abcce85c23a1a653aaf46585065a3b90da8d6",
     "src/Breadcrumbs.php": "c851b83133dd6b61c736e1c721a48f6922af85ebcb1981ca1656c0af04c5417a",
     "src/Commerce7/Blocks.php": "f0abeb4e1c43e5ea8496a80abb5a16c899102b803e5a42597b0298a853b7828c",
     "src/Commerce7/Catalog.php": "dbcd1a5365605f26cf32a5a5a29e27758b3d2f56b33ae7116969e4faa01b6be0",
@@ -39,6 +39,7 @@
     "src/ContentSettings/Framework.php": "45ca56b975e37ea0141febe2ed291c301f9b2b3307d2b62f28ae8946cd911aab",
     "src/ContentSettings/PageMetaBox.php": "89485fb735eb4a4bd1681684edc520d4b91730bd2a8883660ac1bb39ec5d6ecd",
     "src/DemoBar.php": "c5482f253650bdf021c6f06c442fc552083eeb6c5cd7676aa12d9f85680d61b7",
+    "src/DeployPurge.php": "54d500c0ab281b20ec77790bdf1835fca631d669eb11673c328288b4c8bcb94c",
     "src/DesignSettingsTab.php": "8a853f35467de58b195e484e2cf8ec53f133712eeeadb4011fc629f6ef8c022f",
     "src/DesignTokens.php": "a2948b1cf353152745242a42c6a66a07a99746eff39d6485d3a5388012252da9",
     "src/ElementorDefer.php": "2442038bd80b3d671cc361cbcdf6aa72024d05de8668eab6f1389a776272e119",
