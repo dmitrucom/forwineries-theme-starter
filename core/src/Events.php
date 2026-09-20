@@ -174,6 +174,58 @@ class Events {
 		return $date ? date_i18n( get_option( 'date_format' ), strtotime( $date ) ) : '';
 	}
 
+	/**
+	 * An event's featured image, or one of the theme's bundled event photos
+	 * when none is set, so a seed event never renders a grey box. The
+	 * theme lists them under $config['events']['images']:
+	 *
+	 *   'dinner' => array(
+	 *       'url'   => $img . 'event-dinner.jpg',      // full size
+	 *       'small' => $img . 'event-dinner-960.jpg',  // card width (optional)
+	 *       'match' => '/dinner|supper|cellar|table/', // slug keywords (optional)
+	 *   ),
+	 *
+	 * Matched against the post slug first (so seed events get the right
+	 * photo), else rotated by post ID. Returns url / small / own, where
+	 * own is true for a real featured image. Empty url when the theme
+	 * ships no photos at all; callers then fall back to a placeholder.
+	 */
+	public static function image( Config $config, $post_id, string $size = 'full' ): array {
+		if ( has_post_thumbnail( $post_id ) ) {
+			$url = get_the_post_thumbnail_url( $post_id, $size );
+			return array( 'url' => $url ? $url : '', 'small' => '', 'own' => true );
+		}
+		$images = array_filter( (array) $config->get( 'events.images', array() ), function ( $row ) {
+			return is_array( $row ) && ! empty( $row['url'] );
+		} );
+		if ( ! $images ) return array( 'url' => '', 'small' => '', 'own' => false );
+		$slug = (string) get_post_field( 'post_name', $post_id );
+		$pick = null;
+		foreach ( $images as $row ) {
+			if ( ! empty( $row['match'] ) && $slug !== '' && @preg_match( $row['match'], $slug ) ) { $pick = $row; break; }
+		}
+		if ( ! $pick ) {
+			$rows = array_values( $images );
+			$pick = $rows[ (int) $post_id % count( $rows ) ];
+		}
+		return array( 'url' => $pick['url'], 'small' => ! empty( $pick['small'] ) ? $pick['small'] : '', 'own' => false );
+	}
+
+	/**
+	 * The <img> for an event card: the featured image at $size, or the
+	 * bundled photo with its small variant in srcset for card widths.
+	 * Empty string when there is nothing to show.
+	 */
+	public static function image_html( Config $config, $post_id, string $size = 'full', string $sizes = '(max-width: 900px) 100vw, 33vw' ): string {
+		$image = self::image( $config, $post_id, $size );
+		if ( $image['own'] ) {
+			return get_the_post_thumbnail( $post_id, $size, array( 'loading' => 'lazy', 'decoding' => 'async' ) );
+		}
+		if ( $image['url'] === '' ) return '';
+		$srcset = $image['small'] !== '' ? ' srcset="' . esc_url( $image['small'] ) . ' 960w, ' . esc_url( $image['url'] ) . ' 1920w" sizes="' . esc_attr( $sizes ) . '"' : '';
+		return '<img src="' . esc_url( $image['url'] ) . '"' . $srcset . ' alt="" loading="lazy" decoding="async">';
+	}
+
 	public static function rsvp_url( Config $config, $post_id ): string {
 		$url = get_post_meta( $post_id, 'event_rsvp_url', true );
 		return $url ? $url : self::rsvp_url_default( $config );
