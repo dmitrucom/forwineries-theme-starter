@@ -11,7 +11,7 @@ Description:  PLACEHOLDER — replace with a real description. Standalone
               inherits the header, footer, and global typography/color
               system.
 Author:       [Your Name / Studio]
-Version:      0.1.2
+Version:      0.1.3
 Text Domain:  newtheme
 
 NOTE: deliberately NO "Template:" line — this theme is standalone from
@@ -627,6 +627,11 @@ body.newtheme-no-tags .ph-tag { display: none; }
 
 /* =========================================================
    9. WINE CLUB
+   Core paints these cards (cream, border, italic price) after this
+   file loads. To recolour a card, put the grid in the selector
+   (.fw-club-tier-grid .fw-club-tier-card) and restyle h3, p and
+   .fw-club-tier-price together, or the text keeps one theme's colour
+   on the other's background (Stonemarch 1.0.5: cream on cream).
 ========================================================= */
 .fw-club-tier-grid,
 .fw-club-grid {

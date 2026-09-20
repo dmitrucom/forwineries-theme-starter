@@ -35,7 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 // EVERY change (not just CSS/asset changes) — it's the cache-busting
 // query param on every enqueued asset AND the only reliable deploy-
 // verification signal available without server access. See LESSONS.md.
-define( 'NEWTHEME_THEME_VERSION', '0.1.2' );
+define( 'NEWTHEME_THEME_VERSION', '0.1.3' );
 define( 'NEWTHEME_THEME_DIR', get_stylesheet_directory() );
 define( 'NEWTHEME_THEME_URI', get_stylesheet_directory_uri() );
 
