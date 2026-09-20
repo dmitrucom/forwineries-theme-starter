@@ -765,6 +765,18 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
   }
 }
 
+/* Allocated products swap the add-to-cart form for this block, but
+   Commerce7's PDP CSS centers only the form: the message and Login
+   button sat flush left under a centered title. Same box as the form. */
+.c7-product-detail .c7-product__login-message {
+  max-width: 420px;
+  margin: 0 auto;
+  padding-bottom: var(--pdp-space-sm);
+  border-bottom: 1px solid var(--pdp-border);
+  text-align: center;
+}
+.c7-product-detail .c7-product__login-message p { margin: 0 0 var(--pdp-space-sm); }
+
 /**
  * PRODUCT PAGE "ADDITIONAL IMAGES" GALLERY — the actual source of the
  * dead space reported for products with no gallery photos beyond the
