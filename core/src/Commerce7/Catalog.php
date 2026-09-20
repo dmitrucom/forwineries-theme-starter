@@ -201,10 +201,11 @@ class Catalog {
 	 * appropriate for a large, prominent display (e.g. the Flagship Wine
 	 * split-photo section, which calls shape_wine() too) but wasteful
 	 * for a small thumbnail — confirmed as the direct cause of "Keep
-	 * Exploring" loading slowly, one ~1MB bottle photo per related wine.
-	 * Deliberately applied only where each thumbnail is actually used,
-	 * not inside shape_wine() itself, so a caller displaying the photo
-	 * large still gets the original.
+	 * Exploring" loading slowly, one ~1MB bottle photo per related wine,
+	 * and the same on the catalog and teaser cards (a 170px card, 8MB
+	 * of PNG). Deliberately applied only where each thumbnail is
+	 * actually used, not inside shape_wine() itself, so a caller
+	 * displaying the photo large still gets the original.
 	 */
 	private static function thumbnail_image( string $url, string $size = 'large' ): string {
 		if ( ! $url ) return $url;
@@ -421,7 +422,7 @@ class Catalog {
 			<div class="fw-wine-card<?php echo $is_featured ? ' fw-wine-card--featured' : ''; ?>">
 				<div class="fw-wine-img-wrap">
 					<?php if ( $image ) : ?>
-						<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( $image ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy"></a>
+						<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( self::thumbnail_image( $image ) ); ?>" alt="<?php echo esc_attr( $title ); ?>" loading="lazy"></a>
 					<?php else : ?>
 						<div class="ph-img ph-wine fw-wine-img"><span class="ph-tag">wine-bottle-still-life — 500x700</span></div>
 					<?php endif; ?>
@@ -560,7 +561,7 @@ class Catalog {
 						data-featured="<?php echo $item['featured'] ? '1' : '0'; ?>">
 						<div class="fw-wine-img-wrap">
 							<?php if ( $item['image'] ) : ?>
-								<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( $item['image'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy"></a>
+								<a href="<?php echo esc_url( $product_url ); ?>" tabindex="-1" aria-hidden="true"><img class="fw-wine-img" src="<?php echo esc_url( self::thumbnail_image( $item['image'] ) ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy"></a>
 							<?php else : ?>
 								<div class="ph-img ph-wine fw-wine-img"><span class="ph-tag">wine-bottle-still-life — 500x700</span></div>
 							<?php endif; ?>

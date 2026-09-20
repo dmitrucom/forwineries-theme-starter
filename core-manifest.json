@@ -1,7 +1,7 @@
 {
-  "core_version": "1df8437",
-  "core_commit": "1df8437",
-  "synced_at": "2026-09-20T07:03:01Z",
+  "core_version": "76d9d5a",
+  "core_commit": "76d9d5a",
+  "synced_at": "2026-09-20T10:11:22Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
@@ -26,7 +26,7 @@
     "src/Boot.php": "8c83a2aea53d5e6fb16e62e033564ccbb771baea025293cbb2b6aeb7a924e926",
     "src/Breadcrumbs.php": "c851b83133dd6b61c736e1c721a48f6922af85ebcb1981ca1656c0af04c5417a",
     "src/Commerce7/Blocks.php": "f0abeb4e1c43e5ea8496a80abb5a16c899102b803e5a42597b0298a853b7828c",
-    "src/Commerce7/Catalog.php": "e425604a7e56619170cb3b4f09b3c2f37821fe0294a9429c9687a3a1f7309e74",
+    "src/Commerce7/Catalog.php": "dbcd1a5365605f26cf32a5a5a29e27758b3d2f56b33ae7116969e4faa01b6be0",
     "src/Commerce7/ElementorWidget.php": "4144b76baa44a8859f9be6671540aa6a5893116ca1b2b81ea6f50377c2b985da",
     "src/Commerce7/ElementorWidgets.php": "e00df5bc95a58998e0728d740089645062b9427926a1ae1648e24da6248803db",
     "src/Commerce7/Integration.php": "40dfaf1db01f81939a0d7e267564a55f58dcb525b60f27d05c33913ec93bffbb",
