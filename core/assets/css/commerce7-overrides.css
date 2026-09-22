@@ -859,6 +859,24 @@ body.fw-c7-checkout-body { background: var(--fw-cream); }
 }
 .c7-product-detail .c7-product__login-message p { margin: 0 0 var(--pdp-space-sm); }
 
+/* Commerce7's PDP has one "serif" slot (--pdp-font-serif) for the title,
+   price and Key Features heading AND for running copy: the description,
+   feature values, tasting labels and accolade citations. Integration.php
+   maps that slot to the theme heading font, which is a display face on
+   most themes and unreadable at paragraph size (Blackglass, cream on
+   chalk at 17px). The running copy takes the body font; the headings
+   keep the serif. Two-class selectors so these win over Commerce7's
+   later-injected single-class rules. */
+.pdp-root .pdp-prose,
+.pdp-root .pdp-feature div,
+.pdp-root .pdp-tasting-row em,
+.pdp-root .pdp-accolade-citation {
+  font-family: var(--fw-font-body);
+}
+.pdp-root .pdp-prose { font-size: 1.02rem; line-height: 1.75; }
+.pdp-root .pdp-feature div { font-style: normal; font-size: 1.05rem; }
+.pdp-root .pdp-tasting-row em { font-size: 1rem; }
+
 /**
  * PRODUCT PAGE "ADDITIONAL IMAGES" GALLERY — the actual source of the
  * dead space reported for products with no gallery photos beyond the

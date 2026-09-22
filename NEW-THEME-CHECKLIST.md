@@ -111,6 +111,13 @@ this list. In order of what to fill in first:
 - [ ] Log what's sourced/verified in `THEME-NOTES.md`'s photography table
       as you go, so a half-finished pass is visible, not silently assumed
       complete.
+- [ ] Draw `assets/images/favicon.png` (512x512, the theme's own mark on
+      its darkest token). Core's `Favicon` class serves it as the Site
+      Icon until a buyer sets their own; without the file the tab is
+      blank. Stonemarch and Blackglass both shipped without one because
+      this line was missing.
+- [ ] Retake `screenshot.png` (1200x900) whenever the fonts or the hero
+      change.
 
 ## 5. Pull in the latest shared core
 
