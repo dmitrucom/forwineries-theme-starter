@@ -226,6 +226,7 @@ class Catalog {
 			'slug'     => isset( $product['slug'] ) ? $product['slug'] : '',
 			'image'    => ! empty( $product['image'] ) ? $product['image'] : '',
 			'price'    => isset( $variant['price'] ) ? (int) $variant['price'] : 0, // cents
+			'sku'      => isset( $variant['sku'] ) ? (string) $variant['sku'] : '',
 			'type'     => isset( $wine['type'] ) ? (string) $wine['type'] : '',
 			'varietal' => isset( $wine['varietal'] ) ? (string) $wine['varietal'] : '',
 			'vintage'  => ! empty( $wine['vintage'] ) ? (int) $wine['vintage'] : 0, // 0 = Non-Vintage

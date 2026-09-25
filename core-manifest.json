@@ -1,7 +1,7 @@
 {
-  "core_version": "4fbb631",
-  "core_commit": "4fbb631",
-  "synced_at": "2026-09-22T07:58:47Z",
+  "core_version": "02f7982",
+  "core_commit": "02f7982",
+  "synced_at": "2026-09-25T15:24:02Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
@@ -26,7 +26,7 @@
     "src/Boot.php": "8eaa1778f8f6bdc4e4c56cc7756abcce85c23a1a653aaf46585065a3b90da8d6",
     "src/Breadcrumbs.php": "c851b83133dd6b61c736e1c721a48f6922af85ebcb1981ca1656c0af04c5417a",
     "src/Commerce7/Blocks.php": "f0abeb4e1c43e5ea8496a80abb5a16c899102b803e5a42597b0298a853b7828c",
-    "src/Commerce7/Catalog.php": "dbcd1a5365605f26cf32a5a5a29e27758b3d2f56b33ae7116969e4faa01b6be0",
+    "src/Commerce7/Catalog.php": "02b3e396800f4b5bb2f4a6f16c7faf46e445afc24617ff43733ca381977590d4",
     "src/Commerce7/ElementorWidget.php": "4144b76baa44a8859f9be6671540aa6a5893116ca1b2b81ea6f50377c2b985da",
     "src/Commerce7/ElementorWidgets.php": "e00df5bc95a58998e0728d740089645062b9427926a1ae1648e24da6248803db",
     "src/Commerce7/Integration.php": "40dfaf1db01f81939a0d7e267564a55f58dcb525b60f27d05c33913ec93bffbb",
@@ -49,7 +49,7 @@
     "src/Motion.php": "a913fdb3c0daa3860482ea90f6ac977eb983f29eee6d729e79337a375471d673",
     "src/PageSetup.php": "488db461bd47b2384c3c3705e57325a2a0d2b12012be3ffa12bf4ae4622ed9ab",
     "src/PressLogos.php": "ea5820b0f1f58efbbdb38859877cd5c59af8a9b270da020b25bcaaad6ca3d182",
-    "src/Schema.php": "acb5270ad03838e812a0e15cb645a21d878c2658ccec0cc148fcb99966ab90c6",
+    "src/Schema.php": "91aac8eb8b418f3e35eabc6f7756bdb9ef4a24ce853b5dca83c741b95e579b3b",
     "src/Seo.php": "43e063fd660b7e7e87e61df3bcad50ce59b6e59a26649a5599672461b4b84799",
     "src/SettingsPage.php": "538d5e052b5881e32402f6490b3a060629d83ff0fb1d7ea3731cbd5526fba4f0",
     "src/SocialFeed.php": "5f822a906bbad16d780a02ca9a53e2dcda14d6bb4794c30a06f38cd15ba013c5",

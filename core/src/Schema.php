@@ -164,6 +164,8 @@ class Schema {
 				'name'     => $item['title'],
 				'url'      => home_url( '/product/' . $item['slug'] ),
 			);
+			// Tracking apps (1Pixel, GTM tags) read sku as the product ID; without it they fall back to the URL slug.
+			if ( ! empty( $item['sku'] ) ) $product['sku'] = $item['sku'];
 			if ( ! empty( $item['image'] ) ) $product['image'] = $item['image'];
 			if ( ! empty( $item['teaser'] ) ) $product['description'] = $item['teaser'];
 			if ( ! empty( $item['price'] ) && $item['price'] > 0 ) {
