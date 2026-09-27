@@ -643,7 +643,15 @@ class Catalog {
 								<div class="fw-wine-card-body">
 									<h3><a href="<?php echo esc_url( $product_url ); ?>"><?php echo esc_html( $item['title'] ); ?></a></h3>
 									<?php if ( $item['subtitle'] ) : ?><div class="fw-wine-subtitle"><?php echo esc_html( $item['subtitle'] ); ?></div><?php endif; ?>
-									<?php if ( $item['slug'] ) : ?><div class="c7-buy-product" data-product-slug="<?php echo esc_attr( $item['slug'] ); ?>"></div><?php endif; ?>
+									<?php
+									// A price and a link, not a c7-buy-product widget: Commerce7 fires view_item for
+									// every buy widget, so 7 related cards turned one wine view into 8 in GA4 and GTM.
+									if ( $item['slug'] ) : ?>
+										<div class="fw-wine-slider-buy">
+											<?php if ( $item['price'] ) : ?><span class="fw-wine-price"><?php echo esc_html( '$' . number_format_i18n( $item['price'] / 100, $item['price'] % 100 ? 2 : 0 ) ); ?></span><?php endif; ?>
+											<a class="fw-btn" href="<?php echo esc_url( $product_url ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'View %s', $config->text_domain() ), $item['title'] ) ); ?>"><?php esc_html_e( 'View wine', $config->text_domain() ); ?></a>
+										</div>
+									<?php endif; ?>
 								</div>
 							</div>
 						</div>
