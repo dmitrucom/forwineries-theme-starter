@@ -610,6 +610,8 @@ class Integration {
 	private static function register_1px( Config $config ): void {
 		add_action( 'wp_enqueue_scripts', function () use ( $config ) {
 			if ( ! self::widgets_ready( $config ) ) return;
+			// A connected 1PX plugin loads its own copy; two loaders block its activation.
+			if ( class_exists( '\\OnePX_Storage' ) && '' !== (string) \OnePX_Storage::get_site_id() ) return;
 			$url = $config->get( 'c7_1px_url', 'https://1pixel-meta-c7.fly.dev/storefront.js' );
 			$handle = 'fw-1px-storefront';
 			wp_enqueue_script(
