@@ -119,22 +119,58 @@ class Seo {
 		$product = self::current_product( $config );
 		if ( ! $product ) return;
 
-		$url = self::current_url();
+		$url         = self::current_url();
+		$description = $product['teaser'] ? wp_trim_words( $product['teaser'], 30 ) : '';
+		$image_info  = $product['image'] ? self::image_info( $product['image'] ) : null;
 		?>
+		<?php if ( $description ) : ?>
+			<meta name="description" content="<?php echo esc_attr( $description ); ?>" />
+		<?php endif; ?>
 		<meta property="og:type" content="product" />
 		<meta property="og:title" content="<?php echo esc_attr( $product['title'] ); ?>" />
 		<meta property="og:url" content="<?php echo esc_url( $url ); ?>" />
 		<meta property="og:site_name" content="<?php echo esc_attr( $config->brand_name() ); ?>" />
-		<?php if ( $product['teaser'] ) : ?>
-			<meta property="og:description" content="<?php echo esc_attr( wp_trim_words( $product['teaser'], 30 ) ); ?>" />
+		<?php if ( $description ) : ?>
+			<meta property="og:description" content="<?php echo esc_attr( $description ); ?>" />
 		<?php endif; ?>
 		<?php if ( $product['image'] ) : ?>
 			<meta property="og:image" content="<?php echo esc_url( $product['image'] ); ?>" />
+			<?php if ( $image_info ) : ?>
+				<meta property="og:image:width" content="<?php echo (int) $image_info['width']; ?>" />
+				<meta property="og:image:height" content="<?php echo (int) $image_info['height']; ?>" />
+				<meta property="og:image:type" content="<?php echo esc_attr( $image_info['mime'] ); ?>" />
+			<?php endif; ?>
+			<meta property="og:image:alt" content="<?php echo esc_attr( $product['title'] ); ?>" />
 			<meta name="twitter:card" content="summary_large_image" />
 		<?php else : ?>
 			<meta name="twitter:card" content="summary" />
 		<?php endif; ?>
 		<?php
 		echo Schema::products_jsonld( array( $product ) );
+	}
+
+	/**
+	 * Width/height/mime of a remote product image, so crawlers can lay out
+	 * the share card before downloading it. Reads only the first 64 KB
+	 * (enough for PNG/JPEG/WebP headers) and caches per URL, misses included.
+	 */
+	private static function image_info( string $image_url ) {
+		$key    = 'fw_og_img_' . md5( $image_url );
+		$cached = get_transient( $key );
+		if ( false !== $cached ) return $cached ?: null;
+
+		$info     = '';
+		$response = wp_remote_get( $image_url, array(
+			'timeout' => 3,
+			'headers' => array( 'Range' => 'bytes=0-65535' ),
+		) );
+		$body = is_wp_error( $response ) ? '' : wp_remote_retrieve_body( $response );
+		$size = $body ? @getimagesizefromstring( $body ) : false;
+		if ( $size && $size[0] && $size[1] ) {
+			$info = array( 'width' => $size[0], 'height' => $size[1], 'mime' => $size['mime'] );
+		}
+
+		set_transient( $key, $info, $info ? 30 * DAY_IN_SECONDS : DAY_IN_SECONDS );
+		return $info ?: null;
 	}
 }

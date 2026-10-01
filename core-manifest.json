@@ -1,7 +1,7 @@
 {
   "core_version": "f70f0f7",
   "core_commit": "f70f0f7",
-  "synced_at": "2026-09-27T20:24:27Z",
+  "synced_at": "2026-10-01T07:50:52Z",
   "files": {
     "assets/css/admin-settings.css": "acd029fa2475e66b6df884c7b8306b4b678d43eb18fad75eff7d808c20a05e34",
     "assets/css/age-gate.css": "6de4923d1f4725099179a011a79823b6694acc9f4e8d562f3c3900b6dc66aa41",
@@ -50,7 +50,7 @@
     "src/PageSetup.php": "488db461bd47b2384c3c3705e57325a2a0d2b12012be3ffa12bf4ae4622ed9ab",
     "src/PressLogos.php": "ea5820b0f1f58efbbdb38859877cd5c59af8a9b270da020b25bcaaad6ca3d182",
     "src/Schema.php": "91aac8eb8b418f3e35eabc6f7756bdb9ef4a24ce853b5dca83c741b95e579b3b",
-    "src/Seo.php": "43e063fd660b7e7e87e61df3bcad50ce59b6e59a26649a5599672461b4b84799",
+    "src/Seo.php": "83c294657789a43e6ba61cc0141dce9cac8903dad1791c313f0ec092d5eaa50a",
     "src/SettingsPage.php": "538d5e052b5881e32402f6490b3a060629d83ff0fb1d7ea3731cbd5526fba4f0",
     "src/SocialFeed.php": "5f822a906bbad16d780a02ca9a53e2dcda14d6bb4794c30a06f38cd15ba013c5",
     "src/Testimonials.php": "20f11849859be593f8ee1efbbd08b17a8bf306d3e8afebf7250ef0a24510ad5d",
